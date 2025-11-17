@@ -1,0 +1,38 @@
+﻿@using OmniPyme.Web.Core.Extensions
+@model PrivateURoleDTO
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+
+        <h3 class="card-title"> Permisos </h3>
+
+        <div class="row">
+
+            @foreach (var module in Model.Permissions.GroupBy(x => x.Module))
+            {
+                <div class="col-md-3 mt-3">
+
+                    <h5>@module.Key</h5>
+                    @foreach (var permission in module)
+                    {
+                        <div class="form-check form-switch">
+
+                            <input class="form-check-input permission"
+                                   type="checkbox"
+                                   data-permission-id="@permission.Id"
+                                   id="permission_@permission.Id"
+                            @(permission.Selected ? "checked" : "") />
+
+                            <label class="form-check-label" for="permission_@permission.Id">@permission.Description</label>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>

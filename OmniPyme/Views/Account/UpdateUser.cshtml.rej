@@ -1,0 +1,12 @@
+diff a/OmniPyme/Views/Account/UpdateUser.cshtml b/OmniPyme/Views/Account/UpdateUser.cshtml	(rejected hunks)
+@@ -77,8 +77,8 @@
+                         </div>
+                     </div>
+ 
+-                    <div class="form-group">
+-                        <img id="imagePreview" src="@Model.PhotoUrl" alt="Vista previa" style="max-width: 300px; margin-top: 10px;" />
++                    <div class="form-group text-center">
++                        <img id="imagePreview" src="@Model.PhotoUrl" alt="Vista previa" class="rounded-circle mx-auto d-block" style="max-width: 300px; margin-top: 10px;" />
+                     </div>
+ 
+                 </div>

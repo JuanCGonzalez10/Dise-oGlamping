@@ -1,0 +1,311 @@
+﻿@{
+    ViewData["Title"] = "Glamping";
+}
+
+<div class="pagetitle">
+    <h1>Glamping</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li class="breadcrumb-item active">Glamping</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section dashboard">
+    <div class="row">
+
+        <!-- Left side columns -->
+        <div class="col-lg-8">
+            <div class="row">
+
+                <!-- Sales Card -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card sales-card">
+
+                        <div class="filter">
+                            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                <li class="dropdown-header text-start">
+                                    <h6>Filtrar</h6>
+                                </li>
+
+                                <li><a class="dropdown-item" href="#">Hoy</a></li>
+                                <li><a class="dropdown-item" href="#">Este mes</a></li>
+                                <li><a class="dropdown-item" href="#">Este año</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title">Ventas <span>| Hoy</span></h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-bar-chart-line-fill"></i> <!-- Cambiado a un ícono más representativo -->
+                                </div>
+                                <div class="ps-3">
+                                    <h6>145</h6>
+                                    <span class="text-success small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">más que ayer</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- End Sales Card -->
+                <!-- Revenue Card -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card revenue-card">
+
+                        <div class="filter">
+                            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                <li class="dropdown-header text-start">
+                                    <h6>Filtrar</h6>
+                                </li>
+
+                                <li><a class="dropdown-item" href="#">Hoy</a></li>
+                                <li><a class="dropdown-item" href="#">Este mes</a></li>
+                                <li><a class="dropdown-item" href="#">Este año</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title">Ganancias <span>| Este mes</span></h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-currency-dollar"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>$3,264</h6>
+                                    <span class="text-success small pt-1 fw-bold">8%</span> <span class="text-muted small pt-2 ps-1">más que el mes pasado</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- End Revenue Card -->
+                <!-- Customers Card -->
+                <div class="col-xxl-4 col-xl-12">
+                    <div class="card info-card customers-card">
+
+                        <div class="filter">
+                            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                <li class="dropdown-header text-start">
+                                    <h6>Filtrar</h6>
+                                </li>
+
+                                <li><a class="dropdown-item" href="#">Hoy</a></li>
+                                <li><a class="dropdown-item" href="#">Este mes</a></li>
+                                <li><a class="dropdown-item" href="#">Este año</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title">Reservas de Glamping <span>| Este año</span></h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success text-white">
+                                    <i class="bi bi-tree-fill"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>1,244</h6>
+                                    <span class="text-success small pt-1 fw-bold">+12%</span>
+                                    <span class="text-muted small pt-2 ps-1">más que el año pasado</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </div><!-- End Customers Card -->
+            <!-- Reports -->
+            <div class="col-12">
+                <div class="card overflow-hidden shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="position-relative">
+                            <img src="@Url.Content("https://media.istockphoto.com/id/1386869947/es/foto/glamping-carpa-abierta-con-interior-acogedor-en-un-d%C3%ADa-soleado-tienda-de-campa%C3%B1a-de-lujo-para.jpg?s=612x612&w=0&k=20&c=adCZWSHPN1n27TqGJN2mUJuhGtpz4WP2wfTtFVUg4Co=")" alt="Glamping Destacado" class="img-fluid w-100" style="height: 400px; object-fit: cover;">
+
+                            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center bg-dark bg-opacity-50 text-white text-center">
+                                <h2 class="fw-bold">Escapa a la Naturaleza</h2>
+                                <p class="fs-5">Descubre experiencias únicas en nuestros glampings seleccionados</p>
+                                <a href="/Products" class="btn btn-light btn-lg rounded-pill mt-3">Ver Glampings</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- End Reports -->
+            <!-- Recent Sales -->
+            <div class="col-12">
+                <div class="card recent-sales overflow-auto">
+
+                    <div class="filter">
+                        <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                            <li class="dropdown-header text-start">
+                                <h6>Filtrar</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="#">Hoy</a></li>
+                            <li><a class="dropdown-item" href="#">Este mes</a></li>
+                            <li><a class="dropdown-item" href="#">Este año</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body">
+                        <h5 class="card-title">Reservas Recientes <span>| Hoy</span></h5>
+
+                        <table class="table table-borderless datatable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Cliente</th>
+                                    <th scope="col">Glamping</th>
+                                    <th scope="col">Categoría</th>
+                                    <th scope="col">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row"><a href="#">#1032</a></th>
+                                    <td>Laura Martínez</td>
+                                    <td><a href="#" class="text-primary">Cúpula Estelar</a></td>
+                                    <td>Lujo</td>
+                                    <td><span class="badge bg-success">Confirmada</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><a href="#">#1028</a></th>
+                                    <td>Marco Rivera</td>
+                                    <td><a href="#" class="text-primary">Nido del Bosque</a></td>
+                                    <td>Ecológica</td>
+                                    <td><span class="badge bg-warning">Pendiente</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><a href="#">#1019</a></th>
+                                    <td>Sofía Gómez</td>
+                                    <td><a href="#" class="text-primary">Refugio del Lago</a></td>
+                                    <td>Romántica</td>
+                                    <td><span class="badge bg-success">Confirmada</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><a href="#">#1014</a></th>
+                                    <td>Carlos Peña</td>
+                                    <td><a href="#" class="text-primary">Cabaña del Cielo</a></td>
+                                    <td>Familiar</td>
+                                    <td><span class="badge bg-danger">Cancelada</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><a href="#">#1009</a></th>
+                                    <td>Fernanda Ruiz</td>
+                                    <td><a href="#" class="text-primary">Tienda Amanecer</a></td>
+                                    <td>Aventura</td>
+                                    <td><span class="badge bg-success">Confirmada</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+            <!-- End Recent Sales -->
+            <!-- Top Selling -->
+            <div class="col-12">
+                <div class="card top-selling overflow-auto">
+
+                    <div class="filter">
+                        <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                            <li class="dropdown-header text-start">
+                                <h6>Filtrar</h6>
+                            </li>
+
+                            <li><a class="dropdown-item" href="#">Hoy</a></li>
+                            <li><a class="dropdown-item" href="#">Este mes</a></li>
+                            <li><a class="dropdown-item" href="#">Este año</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body pb-0">
+                        <h5 class="card-title">Glampings Más Reservados <span>| Hoy</span></h5>
+
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Vista</th>
+                                    <th scope="col">Nombre</th>
+                                    <th scope="col">Precio</th>
+                                    <th scope="col">Reservas</th>
+                                    <th scope="col">Ingresos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row"><a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPhAyAbNehEotJKxt2kUiOybe8pxF1jVDMXQ&s" alt="Cúpula Estelar" width="50"></a></th>
+                                    <td><a href="#" class="text-primary fw-bold">Cúpula Estelar</a></td>
+                                    <td>$120</td>
+                                    <td class="fw-bold">34</td>
+                                    <td>$4,080</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><a href="#"><img src="https://images.trvl-media.com/lodging/35000000/34870000/34869500/34869427/cdf09879.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill" alt="Refugio del Lago" width="50"></a></th>
+                                    <td><a href="#" class="text-primary fw-bold">Refugio del Lago</a></td>
+                                    <td>$95</td>
+                                    <td class="fw-bold">28</td>
+                                    <td>$2,660</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><a href="#"><img src="https://fabricasdeglamping.com/wp-content/uploads/2023/06/TIENDA-CAMPNAA-1.jpg" alt="Tienda Amanecer" width="50"></a></th>
+                                    <td><a href="#" class="text-primary fw-bold">Tienda Amanecer</a></td>
+                                    <td>$85</td>
+                                    <td class="fw-bold">40</td>
+                                    <td>$3,400</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><a href="#"><img src="https://img.freepik.com/fotos-premium/casa-flotando-agua-reflejo-cielo-nubes_1084068-3450.jpg" alt="Cabaña del Cielo" width="50"></a></th>
+                                    <td><a href="#" class="text-primary fw-bold">Cabaña del Cielo</a></td>
+                                    <td>$105</td>
+                                    <td class="fw-bold">19</td>
+                                    <td>$1,995</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><a href="#"><img src="https://botanicoglamping.com/wp-content/uploads/2020/11/GALERIA-EL-NIDO-02.jpg" alt="Nido del Bosque" width="50"></a></th>
+                                    <td><a href="#" class="text-primary fw-bold">Nido del Bosque</a></td>
+                                    <td>$110</td>
+                                    <td class="fw-bold">25</td>
+                                    <td>$2,750</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+            <!-- End Top Selling -->
+
+        </div>
+    </div><!-- End Left side columns -->
+    <!-- Right side columns -->
+    <div class="col-lg-4">
+
+        <!-- Recent Activity -->
+        <!-- End Recent Activity -->
+        <!-- Budget Report -->
+        <!-- End Budget Report -->
+        <!-- Website Traffic -->
+        <!-- End Website Traffic -->
+        <!-- News & Updates Traffic -->
+        <!-- End sidebar recent posts-->
+
+    </div>
+    </div><!-- End News & Updates -->
+    </div><!-- End Right side columns -->
+    </div>
+</section>

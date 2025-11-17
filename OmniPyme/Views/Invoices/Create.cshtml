@@ -1,0 +1,322 @@
+﻿@model OmniPyme.Web.ViewModels.InvoiceViewModel
+@{
+	ViewData["Title"] = "Nueva Factura";
+}
+
+@section Styles {
+	<link href="~\lib\summernote\summernote-bs5.min.css" rel="stylesheet" />
+}
+
+<div class="pagetitle">
+	<h1>Facturas</h1>
+	<nav>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+			<li class="breadcrumb-item active"><a asp-action="Index">Facturas</a></li>
+			<li class="breadcrumb-item active">Nueva Factura</li>
+		</ol>
+	</nav>
+</div><!-- End Page Title -->
+
+<section class="section dashboard">
+    <form asp-action="Create" method="POST" id="invoiceForm">
+        <!-- Bloque 1: Información de la Factura -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Información de la Factura</h5>
+				<div class="row g-3">
+					<div class="col-md-6">
+						<div class="form-floating">
+							<input asp-for="InvoiceNumber" class="form-control bg-light text-muted" style="pointer-events: none;" readonly />
+							<label asp-for="InvoiceNumber">Número de Factura</label>
+							<span asp-validation-for="InvoiceNumber" class="text-danger"></span>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-floating">
+							<input asp-for="InvoiceDate" class="form-control bg-light text-muted" style="pointer-events: none;" readonly />
+							<label asp-for="InvoiceDate">Fecha de Factura</label>
+							<span asp-validation-for="InvoiceDate" class="text-danger"></span>
+						</div>
+					</div>
+
+					<div class="col-md-6">
+						<div class="form-floating">
+							<select asp-for="IdClient" asp-items="Model.Clients" class="form-control"></select>
+							<label asp-for="IdClient"></label>
+							<span asp-validation-for="IdClient" class="text-danger"></span>
+						</div>
+					</div>
+
+					<div class="col-md-6">
+						<div class="form-floating">
+							<select asp-for="SalePaymentMethod" class="form-select">
+								<option value="">Seleccione método de pago</option>
+								<option value="Efectivo">Efectivo</option>
+								<option value="Tarjeta">Tarjeta de Crédito/Débito</option>
+								<option value="Transferencia">Transferencia Bancaria</option>
+								<option value="Cheque">Cheque</option>
+							</select>
+							<label asp-for="SalePaymentMethod">Método de Pago</label>
+							<span asp-validation-for="SalePaymentMethod" class="text-danger"></span>
+						</div>
+					</div>
+
+					<div class="card mb-4">
+						<div class="card-body">
+							<h5 class="card-title text-primary">Detalle de la Venta</h5>
+
+							<div class="table-responsive">
+								<table class="table table-hover" id="saleDetailTable">
+									<thead>
+										<tr>
+											<th>Producto</th>
+											<th>Cantidad</th>
+											<th>Precio Unitario</th>
+											<th>Impuestos</th>
+											<th>Subtotal</th>
+											<th>Acciones</th>
+										</tr>
+									</thead>
+									<tbody>
+										@* Aqui se agregarán las filas dinámicamente *@
+									</tbody>
+								</table>
+							</div>
+
+							<div class="d-flex justify-content-end mb-4">
+								<button type="button" class="btn btn-success" onclick="agregarProducto()">
+									<i class="bi bi-plus-circle me-1"></i> Agregar Producto
+								</button>
+							</div>
+
+							<div class="mt-3 text-end">
+								<strong>Total: $<span id="totalVenta">0.00</span></strong>
+								<input type="hidden" name="SaleTotal" asp-for="SaleTotal" />
+							</div>
+						</div>
+					</div>
+				</div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-1"></i> Guardar Factura
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-x-circle me-1"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</section>
+
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+	<script src="~\lib\summmernote\summernote-bs5.min.js"></script>
+	<script>
+		let rowIndex = 0;
+		let productosSeleccionados = new Set();
+
+		//Serializar los productos:a
+		const productos = @Html.Raw(Json.Serialize(Model.ProductList));
+
+		// Crear la primera linea
+		document.addEventListener("DOMContentLoaded", function () {
+			agregarProducto();
+		});
+
+		// Agregar producto a la tabla
+		function agregarProducto() {
+			const table = document.getElementById("saleDetailTable").getElementsByTagName('tbody')[0];
+
+			let row = document.createElement("tr");
+			row.id = `row-${rowIndex}`;
+
+			// Crear opciones del select desde la lista de productos
+			let optionsHtml = '<option value="">Seleccione un producto</option>';
+			productos.forEach(p => {
+				optionsHtml += `<option value="${p.id}" data-price="${p.productPrice}" data-tax="${p.productTax}">${p.productName}</option>`;
+			});
+
+			row.innerHTML = `
+				<td>
+					<select name="SaleDetails[${rowIndex}].IdProduct" class="form-select product-select" required>
+						${optionsHtml}
+					</select>
+					<span class="text-danger product-error d-none">Debe seleccionar un producto</span>
+				</td>
+				<td>
+					<input type="number" name="SaleDetails[${rowIndex}].SaleDetailProductQuantity" class="form-control quantity" value="1" min="1" required />
+				</td>
+				<td>
+					<input type="number" name="SaleDetails[${rowIndex}].SaleDetailProductPrice" class="form-control unit-price" readonly value="0" />
+				</td>
+				<td>
+					<input type="number" name="SaleDetails[${rowIndex}].SaleDetailProductTax" class="form-control tax-value" readonly value="0" />
+				</td>
+				<td>
+					<input type="number" name="SaleDetails[${rowIndex}].SaleDetailSubtotal" class="form-control subtotal" readonly value="0" />
+				</td>
+				<td>
+					<button type="button" class="btn btn-danger btn-sm" onclick="removerProducto(${rowIndex})">
+						<i class="bi bi-trash"></i>
+					</button>
+				</td>
+			`;
+
+			table.appendChild(row);
+			rowIndex++;
+
+			refrescarSelects();
+		}
+
+		// Remover producto de la tabla
+		function removerProducto(index) {
+			const tableBody = document.getElementById("saleDetailTable").getElementsByTagName('tbody')[0];
+			const rows = tableBody.querySelectorAll("tr");
+
+			// No permitir eliminar si solo hay una fila
+			if (rows.length <= 1) {
+				alert("Debe haber al menos un producto en la factura.");
+				return;
+			}
+
+			const row = document.getElementById(`row-${index}`);
+			if (!row) return;
+
+			const select = row.querySelector(".product-select");
+			const productId = select?.value;
+			if (productId) {
+				productosSeleccionados.delete(productId);
+			}
+
+			row.remove();
+			actualizarTotalVenta();
+			refrescarSelects(); // También refresca los selects al eliminar
+		}
+
+		// Actualizar el total de la venta
+		function actualizarTotalVenta() {
+			let total = 0;
+			document.querySelectorAll('.subtotal').forEach(input => {
+				total += parseFloat(input.value || 0);
+			});
+			document.getElementById('totalVenta').innerText = total.toFixed(2);
+			document.querySelector('input[name="SaleTotal"]').value = total.toFixed(2);
+		}
+
+		// refrescar los select
+		function refrescarSelects() {
+			const allSelects = document.querySelectorAll(".product-select");
+			allSelects.forEach(select => {
+				const currentValue = select.value;
+				Array.from(select.options).forEach(option => {
+					if (option.value === "") return;
+					option.disabled = productosSeleccionados.has(option.value) && option.value !== currentValue;
+				});
+			});
+		}
+
+		// Evento para calcular subtotal cuando cambia la cantidad
+		document.addEventListener("input", function (e) {
+			if (e.target && e.target.classList.contains("quantity")) {
+				const row = e.target.closest("tr");
+				const quantity = parseFloat(e.target.value);
+				const priceInput = row.querySelector(".unit-price");
+				const subtotalInput = row.querySelector(".subtotal");
+				const taxInput = row.querySelector(".tax-value");
+
+				const select = row.querySelector(".product-select");
+				const selectedOption = select.options[select.selectedIndex];
+				const tax = parseFloat(selectedOption?.getAttribute("data-tax")) || 0;
+
+				const unitPrice = parseFloat(priceInput.value || 0);
+				const taxAmount = unitPrice * quantity * tax;
+				const subtotal = unitPrice * quantity + taxAmount;
+
+				taxInput.value = taxAmount.toFixed(2);
+				subtotalInput.value = subtotal.toFixed(2);
+				actualizarTotalVenta();
+			}
+		});
+
+		// Evento para actualizar precio y subtotal cuando se selecciona producto
+		document.addEventListener("change", function (e) {
+			if (e.target && e.target.classList.contains("product-select")) {
+				const select = e.target;
+				const row = select.closest("tr");
+				const selectedOption = select.options[select.selectedIndex];
+				const productId = selectedOption.value;
+
+				const priceInput = row.querySelector(".unit-price");
+				const quantityInput = row.querySelector(".quantity");
+				const subtotalInput = row.querySelector(".subtotal");
+
+				// Restaurar producto anterior (si lo había)
+				const oldValue = select.getAttribute("data-old-value");
+				if (oldValue) productosSeleccionados.delete(oldValue);
+
+				// Agregar nuevo producto seleccionado
+				if (productId !== "") {
+					productosSeleccionados.add(productId);
+					select.setAttribute("data-old-value", productId);
+				} else {
+					select.removeAttribute("data-old-value");
+				}
+
+				// Validación visual
+				const errorSpan = select.parentElement.querySelector(".product-error");
+				if (productId !== "") {
+					errorSpan?.classList.add("d-none");
+					select.classList.remove("is-invalid");
+				} else {
+					errorSpan?.classList.remove("d-none");
+					select.classList.add("is-invalid");
+				}
+
+				// Actualizar precio y subtotal
+				const unitPrice = parseFloat(selectedOption.getAttribute("data-price")) || 0;
+				const tax = parseFloat(selectedOption.getAttribute("data-tax")) || 0;
+				const quantity = parseFloat(quantityInput.value || 1);
+				const taxInput = row.querySelector(".tax-value");
+
+
+				const taxAmount = unitPrice * quantity * tax;
+				const subtotal = (unitPrice * quantity) + taxAmount;
+
+				priceInput.value = unitPrice.toFixed(2);
+				taxInput.value = taxAmount.toFixed(2);
+				subtotalInput.value = subtotal.toFixed(2);
+
+				actualizarTotalVenta();
+				refrescarSelects();
+			}
+		});
+
+		// Validar antes de enviar el formulario
+		document.getElementById("invoiceForm").addEventListener("submit", function (e) {
+			const selects = document.querySelectorAll(".product-select");
+			let productoSeleccionado = false;
+
+			selects.forEach(select => {
+				const errorSpan = select.parentElement.querySelector(".product-error");
+
+				if (select.value === "") {
+					errorSpan.classList.remove("d-none");
+				} else {
+					errorSpan.classList.add("d-none");
+					productoSeleccionado = true;
+				}
+			});
+
+			if (!productoSeleccionado) {
+				e.preventDefault(); // Bloquea el envío si ningún producto fue seleccionado
+			}
+		});
+
+	</script>
+}

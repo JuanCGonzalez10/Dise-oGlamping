@@ -1,0 +1,44 @@
+﻿@model ProductCategoryDTO
+@{
+    ViewData["Title"] = "Nueva Categoría";
+}
+
+<div class="pagetitle">
+    <h1>Categorías</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Categorías</a></li>
+            <li class="breadcrumb-item active">Nueva categoría</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section dashboard">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title text-primary">Nueva Categoría</h5>
+
+            <form asp-action="Create" method="POST" class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="ProductCategoryName" class="form-control" placeholder="Nombre de la categoría" />
+                        <label asp-for="ProductCategoryName"></label>
+                        <span asp-validation-for="ProductCategoryName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

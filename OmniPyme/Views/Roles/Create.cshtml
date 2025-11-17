@@ -1,0 +1,77 @@
+﻿@model PrivateURoleDTO
+
+@{
+    ViewData["Title"] = "Nuevo Rol";
+}
+
+<div class="pagetitle">
+    <h1>Nuevo Rol</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item active"><a asp-action="Index">Roles</a></li>
+            <li class="breadcrumb-item active">Nuevo Rol</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section dashboard">
+
+    @* Rol *@
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">Nuevo Rol</h3>
+
+
+            <form class="row g-3" asp-action="Create" method="POST" id="frmCreate">
+
+                <partial name="_Role" />
+
+            </form>
+
+        </div>
+    </div>
+
+   
+
+    @* Permisos *@
+    <partial name="_Permissions" />
+
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary" form="frmCreate" id="btnCreate">Guardar</button>
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </div>
+
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+
+        $(document).ready(function () {
+
+            $('#btnCreate').click(function (event) {
+
+                const permissions = $('.permission:checked');
+
+                let permissionIds = [];
+
+                permissions.each(function () {
+                        
+                    const permissionId = $(this).data('permission-id');
+                    permissionIds.push(permissionId);
+                });
+
+                $('#permissionIds').val(JSON.stringify(permissionIds));
+
+                
+
+            });
+        });
+
+    </script>
+}

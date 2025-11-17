@@ -1,0 +1,72 @@
+﻿@model LogViewerDTO
+@{
+    ViewData["Title"] = "Logs";
+}
+
+<section class="section dashboard">
+    <div class="row">
+        <div class="col-12">
+
+            <form method="get" class="mb-3" asp-action="Index">
+                <div class="input-group">
+                    <input type="date" class="form-control" name="date" value="@Model.SelectedDate?.ToString("yyyy-MM-dd")" />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Ver Logs
+                    </button>
+                </div>
+            </form>
+
+            <div class="card recent-sales overflow-auto">
+                <div class="card-body">
+                    <h5 class="card-title">Logs del @Model.SelectedDate?.ToString("dd/MM/yyyy")</h5>
+
+                    @if (Model.Logs.Any())
+                    {
+                        <div class="accordion" id="logsAccordion">
+                            @for (int i = 0; i < Model.Logs.Count; i++)
+                            {
+                                var log = Model.Logs[i];
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="@($"heading_{i}")">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="@($"#collapse_{i}")">
+                                            [@log.Timestamp.ToString("HH:mm:ss")]
+                                            &emsp;
+                                            <span class="badge @GetLevelClass(log.Level)">
+                                                @log.Level
+                                            </span>
+                                        </button>
+                                    </h2>
+                                    <div id="@($"collapse_{i}")" class="accordion-collapse collapse" data-bs-parent="#logsAccordion">
+                                        <div class="accordion-body">
+                                            <pre>@log.Message</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">No se encontraron logs para esta fecha.</div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    private string GetLevelClass(string level)
+    {
+        return level switch
+        {
+            "FTL" or "FATAL" => "bg-dark",
+            "ERR" or "ERROR" => "bg-danger",
+            "WRN" or "WARN" => "bg-warning text-dark",
+            "INF" or "INFO" => "bg-primary",
+            "DBG" or "DEBUG" => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
+}

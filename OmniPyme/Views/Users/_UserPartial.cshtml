@@ -1,0 +1,46 @@
+﻿@model UsersDTO
+
+<div class="row">
+    <div class="col-md-6">
+
+        <div class="form-floating mt-2">
+            <input asp-for="FirstName" class="form-control" placeholder="@Html.DisplayFor(model => model.FirstName)" />
+            <label asp-for="FirstName"></label>
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+
+    </div>
+    <div class="col-md-6">
+
+        <div class="form-floating mt-2">
+            <input asp-for="LastName" class="form-control" placeholder="@Html.DisplayFor(model => model.LastName)" />
+            <label asp-for="LastName"></label>
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-floating mt-2">
+            <input asp-for="PhoneNumber" class="form-control" placeholder="@Html.DisplayFor(model => model.PhoneNumber)" />
+            <label asp-for="PhoneNumber"></label>
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-floating mt-2">
+            <input asp-for="Document" class="form-control" placeholder="@Html.DisplayFor(model => model.Document)" />
+            <label asp-for="Document"></label>
+            <span asp-validation-for="Document" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-floating mt-2">
+            <select asp-for="PrivateURoleId" asp-items="Model.privateURoles" class="form-control"></select>
+            <label asp-for="PrivateURoleId"></label>
+            <span asp-validation-for="PrivateURoleId" class="text-danger"></span>
+        </div>
+    </div>    
+</div>

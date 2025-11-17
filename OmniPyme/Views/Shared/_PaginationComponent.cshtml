@@ -1,0 +1,38 @@
+﻿@model IPagination
+
+@if(Model.TotalPages > 1)
+{
+	<nav aria-label="Page navigation">
+		<ul class="pagination justify-content-center">
+			@* Primero *@
+			<li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+				<a class="page-link" asp-action="Index" asp-route-Page="1" asp-route-filter="@Model.Filter" asp-route-recordsPerPage="@Model.RecordsPerPage"><i class="bi bi-chevron-double-left"></i></a>
+			</li>
+
+			@* Anterior *@
+			<li class="page-item @(!Model.HasPrevius ? "disabled" : "")">
+				<a class="page-link" asp-action="Index" asp-route-Page="@(Model.CurrentPage - 1)" asp-route-filter="@Model.Filter" asp-route-recordsPerPage="@Model.RecordsPerPage"><i class="bi bi-chevron-left"></i></a>
+			</li>
+
+			@* Paginas *@
+			@foreach (int page in Model.Pages)
+			{
+				<li class="page-item @(Model.CurrentPage == page ? "disabled" : "")">
+					<a class="page-link" asp-action="Index" asp-route-Page="@(page)" asp-route-filter="@Model.Filter" asp-route-recordsPerPage="@Model.RecordsPerPage">@(page)</a>
+				</li>
+			}
+
+			@* Siguiente *@
+			<li class="page-item @(!Model.HasNext ? "disabled" : "")">
+				<a class="page-link" asp-action="Index" asp-route-Page="@(Model.CurrentPage + 1)" asp-route-filter="@Model.Filter" asp-route-recordsPerPage="@Model.RecordsPerPage"><i class="bi bi-chevron-right"></i></a>
+			</li>
+
+			@* Ultimo *@
+			<li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+				<a class="page-link" asp-action="Index" asp-route-Page="@Model.TotalPages" asp-route-filter="@Model.Filter" asp-route-recordsPerPage="@Model.RecordsPerPage"><i class="bi bi-chevron-double-right"></i></a>
+			</li>
+		</ul>
+	</nav>
+}
+
+

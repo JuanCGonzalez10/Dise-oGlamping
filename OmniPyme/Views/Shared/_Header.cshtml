@@ -1,0 +1,118 @@
+﻿@using OmniPyme.Web.Data.Entities
+@inject OmniPyme.Web.Services.IUsersService _usersService
+
+@{
+    Users? users;
+    try
+    {
+        users = await _usersService.GetUserAsync(User.Identity.Name);
+    }
+    catch
+    {
+        users = null;
+    }
+}
+
+<header id="header" class="header fixed-top d-flex align-items-center"
+        style="background: #2f3e34; border-bottom: 3px solid #bfa97a;">
+
+    <div class="d-flex align-items-center justify-content-between">
+        <a href="index.html"
+           class="logo d-flex align-items-center"
+           style="color: #e7dcc4; font-weight: 600;">
+
+            <img src="~/assets/img/GC.png" alt=""
+                 style="filter: sepia(50%) brightness(85%); max-height: 50px;">
+
+            <span class="d-none d-lg-block"
+                  style="color: #e7dcc4; margin-left: 8px;">
+                Glamping Connect
+            </span>
+        </a>
+
+        <i class="bi bi-list toggle-sidebar-btn"
+           style="color: #e7dcc4; font-size: 22px;"></i>
+    </div>
+
+    <!-- Search Bar con temática natural -->
+    <div class="search-bar" style="border-radius: 10px;">
+        <form class="search-form d-flex align-items-center" method="POST" action="#"
+              style="background: #f5f0e6; border-radius: 10px; padding: 4px 10px;">
+            <input type="text" name="query" placeholder="Buscar reservas, huéspedes..."
+                   style="background: transparent; border: none; outline: none; color: #2f3e34;">
+            <button type="submit" title="Search"
+                    style="background: none; border: none;">
+                <i class="bi bi-search" style="color: #2f3e34;"></i>
+            </button>
+        </form>
+    </div>
+
+    <nav class="header-nav ms-auto">
+        <ul class="d-flex align-items-center">
+
+            <li class="nav-item dropdown pe-3">
+
+                @if (users is not null)
+                {
+                    string imageSrc = string.IsNullOrWhiteSpace(users.Photo)
+                    ? "/assets/img/profile-img.jpg"
+                    : users.Photo;
+
+                    <a class="nav-link nav-profile d-flex align-items-center pe-0"
+                       href="#" data-bs-toggle="dropdown"
+                       style="color: #e7dcc4;">
+                        <img src="@imageSrc" alt="Profile" class="rounded-circle"
+                             style="border: 2px solid #bfa97a;">
+                        <span class="d-none d-md-block dropdown-toggle ps-2"
+                              style="color: #e7dcc4;">
+                            @users.FirstName.Substring(0, 1). @users.LastName
+                        </span>
+                    </a>
+
+                    <!-- Menú de perfil con estilo rústico -->
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile"
+                        style="background: #f5f0e6; border: 1px solid #bfa97a;">
+
+                        <li class="dropdown-header" style="color: #2f3e34;">
+                            <h6 style="color: #2f3e34;">@users.FullName</h6>
+                            <span>@users.PrivateURole.Name</span><br />
+                            <span>@users.Email</span>
+                        </li>
+
+                        <li><hr class="dropdown-divider" style="border-color: #bfa97a;"></li>
+
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center"
+                               asp-controller="Account" asp-action="UpdateUser"
+                               style="color: #2f3e34;">
+                                <i class="bi bi-person" style="color: #2f3e34;"></i>
+                                <span class="ms-2">Mi Perfil</span>
+                            </a>
+                        </li>
+
+                        <li><hr class="dropdown-divider" style="border-color: #bfa97a;"></li>
+
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center"
+                               asp-controller="Account" asp-action="Logout"
+                               style="color: #2f3e34;">
+                                <i class="bi bi-box-arrow-right" style="color: #2f3e34;"></i>
+                                <span class="ms-2">Cerrar Sesión</span>
+                            </a>
+                        </li>
+                    </ul>
+                }
+                else
+                {
+                    <a class="nav-link dropdwon-toggle" asp-controller="Account" asp-action="Login"
+                       style="color: #e7dcc4;">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Iniciar Sesión</span>
+                    </a>
+                }
+            </li>
+
+        </ul>
+    </nav>
+
+</header>

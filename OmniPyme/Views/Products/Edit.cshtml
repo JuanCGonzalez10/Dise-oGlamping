@@ -1,0 +1,86 @@
+﻿@model ProductDTO
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<div class="pagetitle">
+    <h1>Productos</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+            <li class="breadcrumb-item active"><a asp-action="Index">Productos</a></li>
+            <li class="breadcrumb-item active">Editar producto</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section dashboard">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title text-primary">Editar Producto</h5>
+            <form asp-action="Edit" method="POST" class="row g-3">
+
+                <input type="hidden" asp-for="Id" />
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="ProductName" class="form-control" placeholder="Nombre" />
+                        <label asp-for="ProductName"></label>
+                        <span asp-validation-for="ProductName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="ProductBarCode" class="form-control" placeholder="Código de Barras" />
+                        <label asp-for="ProductBarCode"></label>
+                        <span asp-validation-for="ProductBarCode" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="ProductPrice" class="form-control" placeholder="Precio" />
+                        <label asp-for="ProductPrice"></label>
+                        <span asp-validation-for="ProductPrice" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="ProductTax" min="0" max="100" type="number" step="0.01" class="form-control" placeholder="Impuesto (%)" />
+                        <label asp-for="ProductTax">Impuesto (%)</label>
+                        <span class="text-danger" asp-validation-for="ProductTax"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="form-floating">
+                        <select asp-for="IdProductCategory" asp-items="Model.ProductCategories" class="form-select"></select>
+                        <label asp-for="IdProductCategory"></label>
+                        <span asp-validation-for="IdProductCategory" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="form-floating">
+                        <textarea asp-for="ProductDescription" class="form-control" placeholder="Descripción"></textarea>
+                        <label asp-for="ProductDescription"></label>
+                        <span asp-validation-for="ProductDescription" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

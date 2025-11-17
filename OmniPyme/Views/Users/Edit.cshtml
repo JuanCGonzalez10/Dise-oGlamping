@@ -1,0 +1,51 @@
+﻿@model UsersDTO
+
+@{
+    ViewData["Title"] = "Editar Usuario";
+}
+
+<div class="pagetitle">
+    <h1>Usuarios</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Usuarios</a></li>
+            <li class="breadcrumb-item active">Editar Usuario</li>
+        </ol>
+    </nav>
+</div>
+
+
+<section class="section dashboard">
+
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title text-primary">Editar Usuario</h5>
+
+            <form class="row g-3" asp-action="Edit" method="POST">
+
+                <div class="col-md-12">
+
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="Email" />
+
+                    <partial name="_UserPartial" />
+
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

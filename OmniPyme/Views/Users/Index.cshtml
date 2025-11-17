@@ -1,0 +1,162 @@
+﻿@model PaginationResponse<UsersDTO>
+@inject OmniPyme.Web.Services.IUsersService _usersService
+
+@{
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+}
+
+
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+
+
+<div class="pagetitle">
+    <h1>Dashboard</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+            <li class="breadcrumb-item active">Usuarios</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section dashboard">
+
+    <div class="card">
+        <div class="card-header">
+
+
+                <div class="row">
+				    <h3 class="m-0 font-weight-bold text-primary col-md-11">Usuarios</h3>
+                @if (await _usersService.CurrentUserIsAuthorizedAsync("CreateUsers", "Users"))
+				    {
+                        <div class="col-md-1">
+                            <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-circle"></i></a>
+                        </div>
+                    }
+                </div>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="Index" class="navbar-search" method="GET">
+
+                <input type="hidden" name="Page" value="@Model.CurrentPage" />
+
+                <div class="row mt-3">
+                    <div class="col-md-auto">
+
+                        <select name="RecordsPerPage" class="form-select bg-light border-0 small" asp-for="RecordsPerPage">
+                            <option value="2" selected="@(Model.RecordsPerPage == 2)">2</option>
+                            <option value="10" selected="@(Model.RecordsPerPage == 10)">10</option>
+                            <option value="15" selected="@(Model.RecordsPerPage == 15)">15</option>
+                            <option value="30" selected="@(Model.RecordsPerPage == 30)">30</option>
+                            <option value="50" selected="@(Model.RecordsPerPage == 50)">50</option>
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-10">
+                        <div class="input-group-mb-3">
+                            <input type="text"
+                                   class="form-control bg-light border-0 small"
+                                   placeholder="Buscar..."
+                                   aria-label="search"
+                                   asp-for="Filter">
+                        </div>
+                    </div>
+
+                    <div class="col-md-auto">
+                        <div class="input-group-mb-3">
+                            <button class="btn btn-primary"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
+
+
+            <table class="table table-bordered">
+
+                <thead>
+                    <th>Documento</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th></th>
+                </thead>
+
+                <div class="card-body">
+                    @foreach (UsersDTO item in Model.List)
+                    {
+                    <tr>
+                        <td>@item.Document</td>
+                        <td>@item.FirstName</td>
+                        <td>@item.LastName</td>
+                        <td>@item.PhoneNumber</td>
+                        <td>@item.Email</td>
+                        <td>
+
+                                @if (await _usersService.CurrentUserIsAuthorizedAsync("UpdateUsers", "Users"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i class="bi bi-pencil-fill"></i></a>
+                            }
+
+                                @if (await _usersService.CurrentUserIsAuthorizedAsync("DeleteUsers", "Users") && item.Id.ToString() != currentUserId)
+                            {
+                                <form asp-action="Delete" asp-route-id="@item.Id" style="display: contents;">
+                                    <button class="btn btn-sm btn-danger btnDelete"><i class="bi bi-trash-fill"></i></button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+        </div>
+
+        </table>
+
+        @await Html.PartialAsync("_PaginationComponent", Model)
+
+    </div>
+    </div>
+
+</section>
+
+@section Scripts {
+
+    <script>
+
+        $(document).ready(function() {
+
+            $('.btnDelete').click(function(event) {
+
+                event.preventDefault();
+
+                Swal.fire({
+
+                    title: "¿Desea eliminar al usuario?",
+                    text: "No podrá revertirlo",
+                    icon: "question",
+                    showCancelButton: true
+
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        const form = $(this).closest('form');
+
+                        form.submit();
+                    }
+
+                });
+            });
+
+        });
+
+    </script>
+
+}

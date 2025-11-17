@@ -1,0 +1,93 @@
+﻿@model ClientDTO
+@{
+	ViewData["Title"] = "Nuevo Cliente";
+}
+
+<div class="pagetitle">
+	<h1>Clientes</h1>
+	<nav>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+			<li class="breadcrumb-item active"><a asp-action="Index">Clientes</a></li>
+			<li class="breadcrumb-item active">Nuevo cliente</li>
+		</ol>
+	</nav>
+</div><!-- End Page Title -->
+
+<section class="section dashboard">
+
+	<div class="card">
+		<div class="card-body">
+			<h5 class="card-title text-primary">Nuevo Cliente</h5>
+			<form asp-action="Create" method="POST" class="row g-3">
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input asp-for="DNI" class="form-control" placeholder="DNI" />
+						<label asp-for="DNI"></label>
+						<span asp-validation-for="DNI" class="text-danger"></span>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input asp-for="FirstName" class="form-control" placeholder="Nombre" />
+						<label asp-for="FirstName"></label>
+						<span asp-validation-for="FirstName" class="text-danger"></span>
+					</div>
+				</div>
+
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input asp-for="LastName" class="form-control" placeholder="Apellidos" />
+						<label asp-for="LastName"></label>
+						<span asp-validation-for="LastName" class="text-danger"></span>
+					</div>
+				</div>
+
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input asp-for="Email" class="form-control" placeholder="Email" />
+						<label asp-for="Email"></label>
+						<span asp-validation-for="Email" class="text-danger"></span>
+					</div>
+				</div>
+
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input asp-for="Phone" class="form-control" placeholder="Telefono" />
+						<label asp-for="Phone"></label>
+						<span asp-validation-for="Phone" class="text-danger"></span>
+					</div>
+				</div>
+
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input asp-for="RegisterDate" type="date" class="form-control" placeholder="Fecha de registro" />
+						<label asp-for="RegisterDate"></label>
+						<span asp-validation-for="RegisterDate" class="text-danger"></span>
+					</div>
+				</div>
+
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input asp-for="LastPurchaseDate" type="date" class="form-control" placeholder="Ultima Compra" />
+						<label asp-for="LastPurchaseDate"></label>
+						<span asp-validation-for="LastPurchaseDate" class="text-danger"></span>
+					</div>
+				</div>
+
+				<div class="text-center">
+					<button type="submit" class="btn btn-primary">Guardar</button>
+					<a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+				</div>
+			</form>
+		</div>
+	</div>
+
+</section>
+
+
+@section Scripts{
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}
