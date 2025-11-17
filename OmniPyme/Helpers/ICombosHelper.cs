@@ -10,6 +10,8 @@ namespace OmniPyme.Web.Helpers
         public Task<IEnumerable<SelectListItem>> GetComboProductCategories(int selectedId = 0);
         public Task<IEnumerable<SelectListItem>> GetComboProducts(int selectedId = 0);
         public Task<IEnumerable<SelectListItem>> GetComboRoles();
+
+        public Task<IEnumerable<SelectListItem>> GetComboUsers(string selectedID = "");
     }
 
     public class CombosHelper : ICombosHelper
@@ -93,5 +95,26 @@ namespace OmniPyme.Web.Helpers
 
             return list;
         }
+
+        public async Task<IEnumerable<SelectListItem>> GetComboUsers(string selectedId = "")
+        {
+            List<SelectListItem> list = await _context.Users
+                .Select(u => new SelectListItem
+                {
+                    Text = $"{u.FirstName} {u.LastName} ({u.Email})",
+                    Value = u.Id,
+                    Selected = u.Id == selectedId
+                })
+                .ToListAsync();
+
+            list.Insert(0, new SelectListItem
+            {
+                Text = "[Seleccione un usuario...]",
+                Value = ""
+            });
+
+            return list;
+        }
+
     }
 }

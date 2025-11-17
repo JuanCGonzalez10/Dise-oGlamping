@@ -18,7 +18,9 @@ namespace OmniPyme.Data
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
 
-        public DbSet<PrivateURole> PrivateURoles  { get; set; }
+        public DbSet<PrivateURole> PrivateURoles { get; set; }
+
+        public DbSet<Reservation> Reservations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -33,6 +35,8 @@ namespace OmniPyme.Data
             builder.Entity<Client>()
                 .HasIndex(c => c.DNI)
                 .IsUnique();
+
+            ConfigureReservationRelations(builder);
         }
 
         private void ConfigureKeys(ModelBuilder builder)
@@ -80,5 +84,21 @@ namespace OmniPyme.Data
                 .HasForeignKey(u => u.PrivateURoleId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
+
+        private void ConfigureReservationRelations(ModelBuilder builder)
+        {
+            builder.Entity<Reservation>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Reservation>()
+                .HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+
     }
 }
