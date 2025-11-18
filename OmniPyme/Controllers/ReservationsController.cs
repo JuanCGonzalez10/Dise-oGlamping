@@ -34,7 +34,7 @@ namespace OmniPyme.Web.Controllers
         // =====================================================
         [HttpGet]
         [CustomAuthorize(permission: "ShowReservation", module: "Reservation")]
-        [Authorize]
+        [Authorize()]
         public async Task<IActionResult> Index([FromQuery] PaginationRequest request)
         {
             Response<PaginationResponse<ReservationDTO>> response =
@@ -174,5 +174,81 @@ namespace OmniPyme.Web.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        // =====================================================
+        // CREATE FROM PRODUCT (GET) – para rol CLIENTE
+        // =====================================================
+        // =====================================================
+        // CREATE FROM PRODUCT (GET) – Para rol CLIENTE
+        // =====================================================
+        [HttpGet]
+        [Authorize(Roles = "Client")]
+        public async Task<IActionResult> CreateFromProduct(int productId)
+        {
+            // Usuario logueado
+            var user = await _usersService.GetUserAsync(User.Identity!.Name!);
+            if (user == null)
+            {
+                _notyf.Error("No se pudo identificar al usuario.");
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Cargar combos, pero con product y user fijados
+            var dto = new ReservationDTO
+            {
+                ProductId = productId,
+                UserId = user.Id,
+                Products = await _combosHelper.GetComboProducts(productId),  // bloqueado en vista
+                Users = await _combosHelper.GetComboUsers(user.Id),          // bloqueado en vista
+                CheckIn = DateTime.Now,
+                CheckOut = DateTime.Now.AddDays(1)
+            };
+
+            return View(dto);
+        }
+
+
+        // =====================================================
+        // CREATE FROM PRODUCT (POST)
+        // =====================================================
+        [HttpPost]
+        [Authorize(Roles = "Client")]
+        public async Task<IActionResult> CreateFromProduct(ReservationDTO dto)
+        {
+            // Seguridad: el UserId NO debe venir del cliente
+            var user = await _usersService.GetUserAsync(User.Identity!.Name!);
+            if (user == null)
+            {
+                _notyf.Error("Usuario inválido.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            dto.UserId = user.Id;
+
+            if (!ModelState.IsValid)
+            {
+                _notyf.Error("Debe corregir los errores.");
+                dto.Products = await _combosHelper.GetComboProducts(dto.ProductId);
+                dto.Users = await _combosHelper.GetComboUsers(user.Id);
+                return View(dto);
+            }
+
+            var response = await _reservationsService.CreateAsync(dto);
+
+            if (response.IsSuccess)
+            {
+                _notyf.Success("Reserva creada correctamente.");
+                return RedirectToAction(nameof(Index)); // listado del cliente
+            }
+
+            _notyf.Error(response.Message);
+
+            dto.Products = await _combosHelper.GetComboProducts(dto.ProductId);
+            dto.Users = await _combosHelper.GetComboUsers(user.Id);
+
+            return View(dto);
+        }
+
+
     }
 }

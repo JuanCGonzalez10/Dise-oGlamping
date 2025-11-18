@@ -1,0 +1,104 @@
+﻿@model OmniPyme.Web.DTOs.ReservationDTO
+
+@{
+    ViewData["Title"] = "Nueva Reserva";
+}
+
+<div class="pagetitle">
+    <h1>Crear Reserva</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Reservations" asp-action="Index">Mis Reservas</a></li>
+            <li class="breadcrumb-item active">Nueva</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section dashboard">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Datos de la Reserva</h3>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="CreateFromProduct" method="post">
+
+                @* ProductId oculto *@
+                <input type="hidden" asp-for="ProductId" />
+
+                @* UserId oculto — siempre el del cliente *@
+                <input type="hidden" asp-for="UserId" />
+
+                <div class="mb-3">
+                    <label class="form-label">Glamping</label>
+                    <select asp-for="ProductId" asp-items="Model.Products" class="form-select" disabled></select>
+                    <span class="text-danger" asp-validation-for="ProductId"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Check-In</label>
+                        <input asp-for="CheckIn" class="form-control" type="date" />
+                        <span class="text-danger" asp-validation-for="CheckIn"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Check-Out</label>
+                        <input asp-for="CheckOut" class="form-control" type="date" />
+                        <span class="text-danger" asp-validation-for="CheckOut"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Noches</label>
+                    <input id="NightsDisplay" class="form-control" disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Total Estimado</label>
+                    <input id="TotalDisplay" class="form-control" disabled />
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Confirmar Reserva
+                </button>
+
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function calcularNightsYTotal() {
+            const checkIn = new Date(document.getElementById("CheckIn").value);
+            const checkOut = new Date(document.getElementById("CheckOut").value);
+
+            if (checkOut <= checkIn) {
+                document.getElementById("NightsDisplay").value = "0";
+                document.getElementById("TotalDisplay").value = "0";
+                return;
+            }
+
+            const diff = checkOut - checkIn;
+            const nights = diff / (1000 * 60 * 60 * 24);
+
+            document.getElementById("NightsDisplay").value = nights;
+
+            // El precio por noche no viene al cliente
+            // Pero sí podemos mostrar una referencia si quieres
+        }
+
+        document.getElementById("CheckIn").addEventListener("change", calcularNightsYTotal);
+        document.getElementById("CheckOut").addEventListener("change", calcularNightsYTotal);
+
+        calcularNightsYTotal();
+    </script>
+}
+

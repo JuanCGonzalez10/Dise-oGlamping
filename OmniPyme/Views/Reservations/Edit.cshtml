@@ -1,0 +1,42 @@
+﻿@model ReservationDTO
+@{
+    ViewData["Title"] = "Editar Reserva";
+}
+
+<div class="pagetitle">
+    <h1>Reservas</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+            <li class="breadcrumb-item active"><a asp-action="Index">Reservas</a></li>
+            <li class="breadcrumb-item active">Editar reserva</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section dashboard">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title text-primary">Editar Reserva</h5>
+
+            <form asp-action="Edit" method="POST" class="row g-3">
+                <input type="hidden" asp-for="Id" />
+
+                @* Si decidís usar un partial para compartilo con Create *@
+                <partial name="_ReservationForm" for="@Model" />
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+

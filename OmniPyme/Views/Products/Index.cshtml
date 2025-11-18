@@ -83,6 +83,16 @@
                                             <button class="btn btn-danger btn-sm btnDelete"><i class="bi bi-trash-fill"></i></button>
                                         </form>
                                     }
+                                    @if (await _usersService.CurrentUserIsAuthorizedAsync("CreateReservation", "Reservations"))
+                                    {
+                                        <a asp-controller="Reservations"
+                                           asp-action="CreateFromProduct"
+                                           asp-route-productId="@item.Id"
+                                           class="btn btn-success btn-sm">
+                                            <i class="bi bi-calendar-check"></i> Reservar
+                                        </a>
+                                    }
+
                                 </td>
                             </tr>
                         }

@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OmniPyme.Data;
 using OmniPyme.Web.Core;
@@ -22,68 +24,111 @@ namespace OmniPyme.Web.Services
         }
 
         // ============================================================
-        // CREATE
+        // CREATE (con reglas del punto 6 completas)
         // ============================================================
         public async Task<Response<ReservationDTO>> CreateAsync(ReservationDTO dto)
         {
-            // validar que el producto exista
-            bool productExists = await _context.Products.AnyAsync(x => x.Id == dto.ProductId);
-            if (!productExists)
-            {
-                return ResponseHelper<ReservationDTO>.MakeResponseFail("El producto seleccionado no existe.");
-            }
+            // Validar que el producto exista
+            Product? product = await _context.Products.FirstOrDefaultAsync(x => x.Id == dto.ProductId);
+            if (product == null)
+                return ResponseHelper<ReservationDTO>.MakeResponseFail("El glamping seleccionado no existe.");
 
-            // validar usuario
+            // Validar usuario
             bool userExists = await _context.Users.AnyAsync(x => x.Id == dto.UserId);
             if (!userExists)
-            {
                 return ResponseHelper<ReservationDTO>.MakeResponseFail("El usuario seleccionado no existe.");
-            }
 
-            // validar fechas
-            if (dto.CheckOut <= dto.CheckIn)
-            {
+            // Convertir fechas a UTC (regla #2)
+            DateTime checkInUtc = dto.CheckIn.ToUniversalTime();
+            DateTime checkOutUtc = dto.CheckOut.ToUniversalTime();
+
+            // Validar rango de fechas
+            if (checkOutUtc <= checkInUtc)
                 return ResponseHelper<ReservationDTO>.MakeResponseFail("La fecha de salida debe ser mayor a la de entrada.");
-            }
 
-            // calcular noches y totales
-            Product? product = await _context.Products.FirstAsync(x => x.Id == dto.ProductId);
+            // Regla #3 — evitar traslapes/overbooking
+            bool overlapping = await _context.Reservations.AnyAsync(r =>
+                 r.ProductId == dto.ProductId &&
+                 r.CheckIn < checkOutUtc &&
+                 checkInUtc < r.CheckOut);
+
+            if (overlapping)
+                return ResponseHelper<ReservationDTO>.MakeResponseFail("Ya existe una reserva en esas fechas.");
+
+            // Recalcular noches y total en servidor (regla #1)
+            dto.Nights = (int)(checkOutUtc - checkInUtc).TotalDays;
+            if (dto.Nights <= 0)
+                return ResponseHelper<ReservationDTO>.MakeResponseFail("La reserva debe ser al menos de una noche.");
+
             dto.PricePerNight = product.ProductPrice;
-            dto.Nights = (dto.CheckOut - dto.CheckIn).Days;
             dto.Total = dto.PricePerNight * dto.Nights;
+
+            // Guardar fechas realmente en UTC
+            dto.CheckIn = checkInUtc;
+            dto.CheckOut = checkOutUtc;
+
+            // Guardar instrucciones de pago (regla #5)
+            dto.PaymentInstructions =
+                $"Consignar {dto.Total:C} al banco XXX. Referencia: {Guid.NewGuid()}";
+
             dto.CreatedAt = DateTime.UtcNow;
+            dto.Status = "PendientePago";
 
             return await CreateAsync<Reservation, ReservationDTO>(dto);
         }
 
         // ============================================================
-        // EDIT
+        // EDIT (con recalculo y validación de fechas)
         // ============================================================
         public async Task<Response<ReservationDTO>> EditAsync(ReservationDTO dto)
         {
             bool exists = await _context.Reservations.AnyAsync(x => x.Id == dto.Id);
             if (!exists)
-            {
                 return ResponseHelper<ReservationDTO>.MakeResponseFail($"No existe la reserva con id {dto.Id}");
-            }
 
-            // recalcular totales
+            // Obtener el producto
             Product? product = await _context.Products.FirstAsync(x => x.Id == dto.ProductId);
+
+            // Convertir fechas a UTC
+            DateTime checkInUtc = dto.CheckIn.ToUniversalTime();
+            DateTime checkOutUtc = dto.CheckOut.ToUniversalTime();
+
+            if (checkOutUtc <= checkInUtc)
+                return ResponseHelper<ReservationDTO>.MakeResponseFail("La fecha de salida debe ser mayor a la de entrada.");
+
+            dto.CheckIn = checkInUtc;
+            dto.CheckOut = checkOutUtc;
+
+            // Recalcular noches y total
+            dto.Nights = (int)(checkOutUtc - checkInUtc).TotalDays;
             dto.PricePerNight = product.ProductPrice;
-            dto.Nights = (dto.CheckOut - dto.CheckIn).Days;
             dto.Total = dto.PricePerNight * dto.Nights;
 
             return await EditAsync<Reservation, ReservationDTO>(dto, dto.Id);
         }
 
         // ============================================================
-        // DELETE
+        // DELETE (con política de cancelación de 24h)
         // ============================================================
         public async Task<Response<object>> DeleteAsync(int id)
         {
-            var response = await DeleteAsync<Reservation>(id);
-            response.Message = !response.IsSuccess ? $"La reserva con id {id} no existe" : response.Message;
-            return response;
+            var reservation = await _context.Reservations.FindAsync(id);
+            if (reservation == null)
+                return ResponseHelper<object>.MakeResponseFail($"La reserva con id {id} no existe");
+
+            // Regla #2 — No cancelar si faltan menos de 24h para check-in
+            double horasRestantes = (reservation.CheckIn - DateTime.UtcNow).TotalHours;
+            if (horasRestantes < 24)
+            {
+                return ResponseHelper<object>.MakeResponseFail(
+                    "No es posible cancelar una reserva con menos de 24 horas antes del check-in."
+                );
+            }
+
+            _context.Reservations.Remove(reservation);
+            await _context.SaveChangesAsync();
+
+            return ResponseHelper<object>.MakeResponseSuccess(null, "Reserva cancelada correctamente.");
         }
 
         // ============================================================
@@ -99,9 +144,7 @@ namespace OmniPyme.Web.Services
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (entity is null)
-                {
                     return ResponseHelper<ReservationDTO>.MakeResponseFail($"No existe la reserva con id {id}");
-                }
 
                 ReservationDTO dto = _mapper.Map<ReservationDTO>(entity);
                 return ResponseHelper<ReservationDTO>.MakeResponseSuccess(dto, "Reserva encontrada con éxito");
@@ -152,6 +195,11 @@ namespace OmniPyme.Web.Services
                     CheckOut = r.CheckOut,
                 }).ToListAsync();
         }
+
+        
+        
+
     }
 }
+
 

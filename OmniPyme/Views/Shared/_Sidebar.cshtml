@@ -92,6 +92,31 @@
 			</li>
 		}
 
+		<!-- CLIENTE: Mis reservas -->
+		@if (User.IsInRole("Client"))
+		{
+			<li class="nav-item">
+				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reservations" ? "" : "collapsed")"
+				   asp-controller="Reservations" asp-action="Index">
+					<i class="bi bi-calendar-check"></i>
+					<span>Mis Reservas</span>
+				</a>
+			</li>
+		}
+
+		<!-- ADMIN: Gestión de reservas -->
+		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowReservation", "Reservation"))
+		{
+			<li class="nav-item">
+				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reservations" ? "" : "collapsed")"
+				   asp-controller="Reservations" asp-action="Index">
+					<i class="bi bi-journal-bookmark-fill"></i>
+					<span>Reservas</span>
+				</a>
+			</li>
+		}
+
+
 	</ul>
 
 </aside><!-- End Sidebar-->

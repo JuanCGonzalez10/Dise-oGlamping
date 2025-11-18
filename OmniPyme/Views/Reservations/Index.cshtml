@@ -1,0 +1,181 @@
+﻿@model PaginationResponse<ReservationDTO>
+@inject OmniPyme.Web.Services.IUsersService _usersService
+
+@{
+    ViewData["Title"] = "Reservas";
+
+    var isAdmin = await _usersService.CurrentUserIsAuthorizedAsync("AdminPanel", "Admin");
+    var isClient = await _usersService.CurrentUserIsAuthorizedAsync("ClientPanel", "Client");
+}
+
+<div class="pagetitle">
+    <h1>Reservas</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+            <li class="breadcrumb-item active">Reservas</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section dashboard">
+    <div class="card">
+        <div class="card-header">
+            <div class="row">
+                <h3 class="card-title col-md-10">Reservas</h3>
+
+                <!-- Botón nuevo: solo clientes -->
+                @if (isClient)
+                {
+                    <div class="col-md-2 text-end">
+                        <a asp-controller="Reservations" asp-action="MyProducts"
+                           class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Nueva reserva
+                        </a>
+                    </div>
+                }
+
+                <!-- Botón para crear libre (solo para Admin) -->
+                @if (isAdmin)
+                {
+                    <div class="col-md-2 text-end">
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Crear (Admin)
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="Index" method="get">
+                <input type="hidden" name="Page" value="@Model.CurrentPage" />
+                <div class="row mt-3">
+                    <div class="col-md-auto">
+                        <select name="RecordsPerPage" class="form-select bg-light border-0 small" asp-for="RecordsPerPage">
+                            <option value="2" selected="@(Model.RecordsPerPage == 2)">2</option>
+                            <option value="10" selected="@(Model.RecordsPerPage == 10)">10</option>
+                            <option value="15" selected="@(Model.RecordsPerPage == 15)">15</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-9">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control bg-light border-0 small"
+                                   placeholder="Buscar..." asp-for="Filter" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-auto">
+                        <button class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Glamping</th>
+                            <th>Entrada</th>
+                            <th>Salida</th>
+                            <th>Noches</th>
+                            <th>Método Pago</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model.List != null && Model.List.Any())
+                        {
+                            foreach (var item in Model.List)
+                            {
+                                <tr>
+                                    <td>@($"{item.User?.FirstName} {item.User?.LastName}")</td>
+                                    <td>@item.Product?.ProductName</td>
+                                    <td>@item.CheckIn.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.CheckOut.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.Nights</td>
+                                    <td>@item.PaymentMethod</td>
+                                    <td>@item.Total.ToString("C")</td>
+                                    <td>
+                                        @switch (item.Status)
+                                        {
+                                            case "Confirmada":
+                                                <span class="badge bg-success">Confirmada</span>
+                                                ; break;
+                                            case "PendientePago":
+                                                <span class="badge bg-warning text-dark">Pendiente Pago</span>
+                                                ; break;
+                                            case "Cancelada":
+                                                <span class="badge bg-danger">Cancelada</span>
+                                                ; break;
+                                            default:
+                                                <span class="badge bg-secondary">@item.Status</span>
+                                                ; break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm"><i class="bi bi-eye-fill"></i></a>
+
+                                        @if (isAdmin)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id"
+                                               class="btn btn-warning btn-sm">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+
+                                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                                <button class="btn btn-danger btn-sm btnDelete">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">No hay reservas registradas.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @await Html.PartialAsync("_PaginationComponent", Model)
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.btnDelete').click(function (event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Esta acción no se puede revertir",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(this).closest('form').submit();
+                    }
+                })
+            });
+        });
+    </script>
+}
+
+

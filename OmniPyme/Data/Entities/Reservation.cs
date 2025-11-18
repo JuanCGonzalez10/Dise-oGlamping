@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OmniPyme.Web.Data.Entities
 {
-    public class Reservation
+    public class Reservation: IId 
     {
         [Key]
         public int Id { get; set; }

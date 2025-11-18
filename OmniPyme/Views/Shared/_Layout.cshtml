@@ -10,9 +10,21 @@
 </head>
 <body>
     <!-- ======= Header ======= -->
-    @await Html.PartialAsync("_Header") <!-- Aquí deberías tener tu header con el botón toggle -->
+    @await Html.PartialAsync("_Header")
+
+    <!-- ========== DEBUG DEL USUARIO LOGUEADO ========= -->
+    <div class="container mb-3">
+        <p><strong>Usuario logueado:</strong> @User.Identity?.Name</p>
+        <ul>
+            @foreach (var claim in User.Claims)
+            {
+                <li>@claim.Type : @claim.Value</li>
+            }
+        </ul>
+    </div>
+    <!-- =============================================== -->
     <!-- ======= Sidebar ======= -->
-    @await Html.PartialAsync("_Sidebar") <!-- Aquí va el aside que me mostraste -->
+    @await Html.PartialAsync("_Sidebar")
 
     <div class="container">
         <main role="main" class="pb-3">
@@ -25,16 +37,13 @@
             &copy; 2025 - OmniPyme - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-
-    <!-- TinyMCE: debe cargarse antes de tu main.js -->
     <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
-    <!-- Aquí tu JS que contiene el init de TinyMCE y el resto de NiceAdmin -->
     <script src="~/js/site.niceadmin.js" asp-append-version="true"></script>
-
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -17,7 +17,7 @@ namespace OmniPyme.Web.Data.Seeders
         public async Task SeedAsync()
         {
 
-            List<Permission> permissions = [.. Client(), .. ProductCategories(), .. Products(), .. Sales(), .. Roles(), .. Users(), .. Logs()];
+            List<Permission> permissions = [.. Client(), .. ProductCategories(), .. Products(), .. Sales(), .. Roles(), .. Users(), .. Logs(), .. Reservations()];
 
             foreach (Permission permission in permissions)
             {
@@ -125,5 +125,16 @@ namespace OmniPyme.Web.Data.Seeders
                     new Permission { Name = "ShowLogs", Description = "Ver Logs", Module = "Logs" },
                 };
         }
+
+        private List<Permission> Reservations()
+        {
+            return new List<Permission>
+    {
+        new Permission { Name = "ShowReservation", Description = "Ver todas las reservas", Module = "Reservation" },
+        new Permission { Name = "ShowMyReservations", Description = "Ver mis reservas", Module = "Reservation" },
+        new Permission { Name = "CreateReservationFromProduct", Description = "Crear reservas desde productos", Module = "Reservation" }
+    };
+        }
+
     }
 }
