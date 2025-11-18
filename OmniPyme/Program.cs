@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using OmniPyme.Data;
 using OmniPyme.Web;
 using OmniPyme.Web.Data.Entities;
-using OmniPyme.Web.Data.Seeders;
+using OmniPyme.Web.Data.Seeders; // Necesario para la clase UserRolesSeeder
 using OmniPyme.Web.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // --------------------------------------------------------
 // 1. SERVICES
@@ -17,19 +17,21 @@ builder.Services.AddControllersWithViews();
 // DB Context
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnection"),
+        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure()); // Habilita reintentos
 });
 
-// ⬇⬇⬇ ESTO FALTABA PARA QUE FUNCIONE EL SIDEBAR ⬇⬇⬇
-
-// 👉 Necesario para acceder al usuario logueado
+// 👉 Necesario para acceder al usuario logueado (para el IUsersService)
 builder.Services.AddHttpContextAccessor();
 
 // 👉 Registrar servicio de usuarios (NECESARIO para permisos)
 builder.Services.AddScoped<IUsersService, UsersService>();
 
-// 👉 Tus servicios personalizados
+// 👉 Tus servicios personalizados (incluido el de Reservas)
 builder.Services.AddScoped<IReservationsService, ReservationsService>();
+
+// Inyección del Seeder (Debe ser Transient para ser inyectado y usado fuera del scope)
+builder.Services.AddTransient<UserRolesSeeder>(); // Correcto
 
 // Métodos personalizados
 builder.AddCustomConfiguration();
@@ -38,7 +40,7 @@ builder.AddCustomConfiguration();
 // 2. BUILD APP
 // --------------------------------------------------------
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // --------------------------------------------------------
 // 3. MIDDLEWARE
@@ -53,10 +55,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
-
 // 🔐 Autenticación → SIEMPRE antes que Authorization
 app.UseAuthentication();
+app.UseRouting();
 app.UseAuthorization();
 
 // Manejo de errores con páginas personalizadas
@@ -72,40 +73,52 @@ app.UseEndpoints(endpoints =>
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
 
-    // Endpoint minimal extra
     endpoints.MapGet("/api/minimal", () =>
     {
         return "Hello from a minimal endpoint!";
     });
 });
 
-// Métodos personalizados del WebApplication
 app.AddCustomWebApplicationConfiguration();
 
 // --------------------------------------------------------
-// 5. RUN
+// 5. MIGRACIÓN Y SEEDING (¡CRUCIAL!)
+// --------------------------------------------------------
+
+// 1. FORZAR MIGRACIONES ANTES DEL SEEDER
+await EnsureDatabaseIsMigrated(app);
+
+// 2. LLAMADA AL SEEDER
+await SeedData(app);
+
+// --------------------------------------------------------
+// 6. RUN
 // --------------------------------------------------------
 
 app.Run();
 
-public partial class Program
+// FUNCIÓN PARA APLICAR MIGRACIONES
+async Task EnsureDatabaseIsMigrated(WebApplication application)
 {
-    // ------------------------
-    // MÉTODOS AUXILIARES
-    // ------------------------
-
-    async Task EnsureDatabaseMigrated(WebApplication application)
+    // Usa un scope para acceder a servicios
+    using (var scope = application.Services.CreateScope())
     {
-        using var scope = application.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+        // Esto crea la DB si no existe y aplica todas las migraciones pendientes
         await dbContext.Database.MigrateAsync();
     }
+}
 
-    async Task SeedData(WebApplication application)
+// FUNCIÓN DEL SEEDER
+async Task SeedData(WebApplication application)
+{
+    // Usa un scope para acceder a servicios
+    using (IServiceScope scope = application.Services.CreateScope())
     {
-        using var scope = application.Services.CreateScope();
-        var seeder = scope.ServiceProvider.GetRequiredService<UserRolesSeeder>();
+        UserRolesSeeder seeder = scope.ServiceProvider.GetRequiredService<UserRolesSeeder>();
         await seeder.SeedAsync();
     }
 }
+
+public partial class Program { }
 

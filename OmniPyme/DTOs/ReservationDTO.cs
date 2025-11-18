@@ -22,7 +22,7 @@ namespace OmniPyme.Web.DTOs
 
         public IEnumerable<SelectListItem>? Products { get; set; }
 
-
+        public Dictionary<int, decimal>? ProductPricesMap { get; set; } = new();
         // =====================================================
         // USUARIO (CLIENTE)
         // =====================================================
@@ -70,14 +70,12 @@ namespace OmniPyme.Web.DTOs
         // =====================================================
         // PAGO
         // =====================================================
-
+        public IEnumerable<SelectListItem>? PaymentMethods { get; set; }
         [Required(ErrorMessage = "El campo {0} es obligatorio")]
         [Display(Name = "Método de Pago")]
         public string PaymentMethod { get; set; } = null!;
 
-        [Display(Name = "Instrucciones de Pago")]
-        [MaxLength(500)]
-        public string? PaymentInstructions { get; set; }
+        
 
 
         // =====================================================

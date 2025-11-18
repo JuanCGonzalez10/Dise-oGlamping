@@ -12,6 +12,8 @@ namespace OmniPyme.Web.Helpers
         public Task<IEnumerable<SelectListItem>> GetComboRoles();
 
         public Task<IEnumerable<SelectListItem>> GetComboUsers(string selectedID = "");
+
+        public IEnumerable<SelectListItem> GetComboPaymentMethods(string selectedName = "");
     }
 
     public class CombosHelper : ICombosHelper
@@ -111,6 +113,29 @@ namespace OmniPyme.Web.Helpers
             {
                 Text = "[Seleccione un usuario...]",
                 Value = ""
+            });
+
+            return list;
+        }
+        public IEnumerable<SelectListItem> GetComboPaymentMethods(string selectedName = "")
+        {
+            // Lista estática de métodos de pago (ajustar si vienen de BD)
+            var methods = new List<string> { "Transferencia Bancaria", "Tarjeta de Crédito", "Efectivo" };
+
+            List<SelectListItem> list = methods
+                .Select(m => new SelectListItem
+                {
+                    Text = m,
+                    Value = m,
+                    Selected = m == selectedName
+                }).ToList();
+
+            list.Insert(0, new SelectListItem
+            {
+                Text = "[Seleccione método de pago...]",
+                Value = "",
+                Disabled = true,
+                Selected = string.IsNullOrEmpty(selectedName)
             });
 
             return list;

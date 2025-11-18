@@ -3,9 +3,6 @@
 
 @{
     ViewData["Title"] = "Reservas";
-
-    var isAdmin = await _usersService.CurrentUserIsAuthorizedAsync("AdminPanel", "Admin");
-    var isClient = await _usersService.CurrentUserIsAuthorizedAsync("ClientPanel", "Client");
 }
 
 <div class="pagetitle">
@@ -24,19 +21,17 @@
             <div class="row">
                 <h3 class="card-title col-md-10">Reservas</h3>
 
-                <!-- Botón nuevo: solo clientes -->
-                @if (isClient)
+                @if (await _usersService.CurrentUserIsAuthorizedAsync("CreateReservationFromProduct", "Reservation"))
                 {
                     <div class="col-md-2 text-end">
-                        <a asp-controller="Reservations" asp-action="MyProducts"
+                        <a asp-controller="Products" asp-action="Index"
                            class="btn btn-success">
                             <i class="bi bi-plus-circle"></i> Nueva reserva
                         </a>
                     </div>
                 }
 
-                <!-- Botón para crear libre (solo para Admin) -->
-                @if (isAdmin)
+                @if (await _usersService.CurrentUserIsAuthorizedAsync("CreateReservation", "Reservation"))
                 {
                     <div class="col-md-2 text-end">
                         <a asp-action="Create" class="btn btn-primary">
@@ -56,6 +51,7 @@
                             <option value="2" selected="@(Model.RecordsPerPage == 2)">2</option>
                             <option value="10" selected="@(Model.RecordsPerPage == 10)">10</option>
                             <option value="15" selected="@(Model.RecordsPerPage == 15)">15</option>
+                            <option value="30" selected="@(Model.RecordsPerPage == 30)">30</option>
                         </select>
                     </div>
 
@@ -121,15 +117,21 @@
                                         }
                                     </td>
                                     <td>
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm"><i class="bi bi-eye-fill"></i></a>
+                                        @if (await _usersService.CurrentUserIsAuthorizedAsync("ShowReservation", "Reservation"))
+                                        {
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm"><i class="bi bi-eye-fill"></i></a>
+                                        }
 
-                                        @if (isAdmin)
+                                        @if (await _usersService.CurrentUserIsAuthorizedAsync("UpdateReservation", "Reservation"))
                                         {
                                             <a asp-action="Edit" asp-route-id="@item.Id"
                                                class="btn btn-warning btn-sm">
                                                 <i class="bi bi-pencil-fill"></i>
                                             </a>
+                                        }
 
+                                        @if (await _usersService.CurrentUserIsAuthorizedAsync("DeleteReservation", "Reservation"))
+                                        {
                                             <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
                                                 <button class="btn btn-danger btn-sm btnDelete">
                                                     <i class="bi bi-trash-fill"></i>

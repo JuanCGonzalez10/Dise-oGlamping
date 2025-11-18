@@ -23,6 +23,15 @@ namespace OmniPyme.Web.Core
 
             CreateMap<AccountUserDTO, Users>().ForMember(dest => dest.Photo, options => options.Ignore())
                                              .ForMember(user => user.UserName, config => config.MapFrom(dto => dto.Email));
-        }
+
+            CreateMap<Reservation, ReservationDTO>()
+            .ForMember(dest => dest.Products, opt => opt.Ignore())
+            .ForMember(dest => dest.Users, opt => opt.Ignore())
+            .ForMember(dest => dest.PaymentMethods, opt => opt.Ignore())
+            .ForMember(dest => dest.ProductPricesMap, opt => opt.Ignore())
+            .ReverseMap(); // Esto crea el mapeo DTO -> Entity también
+         } 
+        
     }
+    
 }

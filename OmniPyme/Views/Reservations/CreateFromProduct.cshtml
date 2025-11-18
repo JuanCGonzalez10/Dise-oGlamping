@@ -31,6 +31,12 @@
                 @* UserId oculto — siempre el del cliente *@
                 <input type="hidden" asp-for="UserId" />
 
+                @* PaymentMethod oculto - Necesario para pasar el [Required] validation en el DTO *@
+                <input type="hidden" asp-for="PaymentMethod" />
+
+                <input type="hidden" asp-for="PricePerNight" id="ProductPricePerNight" />
+                <input type="hidden" asp-for="Status" />
+
                 <div class="mb-3">
                     <label class="form-label">Glamping</label>
                     <select asp-for="ProductId" asp-items="Model.Products" class="form-select" disabled></select>
@@ -76,23 +82,57 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        function calcularNightsYTotal() {
-            const checkIn = new Date(document.getElementById("CheckIn").value);
-            const checkOut = new Date(document.getElementById("CheckOut").value);
+        function calculateNights(date1Str, date2Str) {
+            if (!date1Str || !date2Str) return 0;
 
-            if (checkOut <= checkIn) {
-                document.getElementById("NightsDisplay").value = "0";
-                document.getElementById("TotalDisplay").value = "0";
+            const date1 = new Date(date1Str);
+            const date2 = new Date(date2Str);
+
+            if (date2 <= date1) return 0;
+
+            const utcDate1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
+            const utcDate2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
+
+            const diffMs = utcDate2 - utcDate1;
+            const oneDayMs = 1000 * 60 * 60 * 24;
+
+            return Math.round(diffMs / oneDayMs);
+        }
+
+        // CRÍTICO: Leer el precio por noche del input hidden
+        //const pricePerNight = parseFloat(document.getElementById("ProductPricePerNight").value) || 0;
+
+        function calcularNightsYTotal() {
+            const checkInValue = document.getElementById("CheckIn").value;
+            const checkOutValue = document.getElementById("CheckOut").value;
+
+            const nightsDisplay = document.getElementById("NightsDisplay");
+            const totalDisplay = document.getElementById("TotalDisplay");
+
+            nightsDisplay.value = "0";
+            totalDisplay.value = "0";
+
+            if (!checkInValue || !checkOutValue) {
                 return;
             }
+            const pricePerNight = parseFloat(document.getElementById("ProductPricePerNight").value) || 0;
+            // 1. Calcular noches usando la nueva función
+            const nights = calculateNights(checkInValue, checkOutValue);
 
-            const diff = checkOut - checkIn;
-            const nights = diff / (1000 * 60 * 60 * 24);
+            if (nights > 0) {
+                nightsDisplay.value = nights;
 
-            document.getElementById("NightsDisplay").value = nights;
+                // 2. Calcular el total
+                if (pricePerNight > 0) {
+                    const total = nights * pricePerNight;
 
-            // El precio por noche no viene al cliente
-            // Pero sí podemos mostrar una referencia si quieres
+                    totalDisplay.value = total.toLocaleString('es-CO', {
+                        style: 'currency',
+                        currency: 'COP', // Ajusta la moneda si es necesario
+                        minimumFractionDigits: 2
+                    });
+                }
+            }
         }
 
         document.getElementById("CheckIn").addEventListener("change", calcularNightsYTotal);

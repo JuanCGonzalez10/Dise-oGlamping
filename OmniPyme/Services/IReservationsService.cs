@@ -14,6 +14,9 @@ namespace OmniPyme.Web.Services
 
         // listas para combos
         Task<List<ReservationDTO>> GetReservationListAsync();
+
+        Task<Dictionary<int, decimal>> GetProductPricesMapAsync();
+        Task<decimal?> GetProductPriceAsync(int productId);
     }
 }
 

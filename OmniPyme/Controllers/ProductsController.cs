@@ -38,6 +38,26 @@ namespace OmniPyme.Web.Controllers
             return View(response.Result);
         }
 
+        // =====================================================
+        // DETAILS (Ver detalles de un Glamping)
+        // NUEVA ACCIÓN - ACCESIBLE PARA TURISTA (ShowProduct)
+        // =====================================================
+        [HttpGet]
+        [CustomAuthorize(permission: "ShowProduct", module: "Product")]
+        [Authorize]
+        public async Task<IActionResult> Details([FromRoute] int id)
+        {
+            Response<ProductDTO> response = await _productsService.GetOneAsync(id);
+
+            if (!response.IsSuccess)
+            {
+                _notyf.Error(response.Message);
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(response.Result);
+        }
+
         [HttpGet]
         [CustomAuthorize(permission: "CreateProduct", module: "Product")]
         [Authorize]

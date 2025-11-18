@@ -1,6 +1,9 @@
 ﻿@model PaginationResponse<ProductDTO>
 @inject OmniPyme.Web.Services.IUsersService _usersService
 @{
+    // Asumimos que si un usuario tiene acceso a este Index, tiene el permiso ShowProduct
+    // Pero si quieres ser ultra-granular, puedes añadir:
+    // @if (!await _usersService.CurrentUserIsAuthorizedAsync("ShowProduct", "Product")) { return; }
     ViewData["Title"] = "Glampings";
 }
 
@@ -36,9 +39,11 @@
                             <option value="2" selected="@(Model.RecordsPerPage == 2)">2</option>
                             <option value="10" selected="@(Model.RecordsPerPage == 10)">10</option>
                             <option value="15" selected="@(Model.RecordsPerPage == 15)">15</option>
+                            <option value="30" selected="@(Model.RecordsPerPage == 30)">30</option>
                         </select>
                     </div>
-                    <div class="col-md-10">
+                    <div class="col-md-9">
+                        @* Ajuste a col-md-9 para que encaje con el col-md-auto de Search *@
                         <div class="input-group-mb-3">
                             <input type="text" class="form-control bg-light border-0 small" placeholder="Buscar..." asp-for="Filter" />
                         </div>
@@ -49,7 +54,7 @@
                 </div>
             </form>
 
-            <div class="table-responsive">
+            <div class="table-responsive mt-3">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -70,35 +75,32 @@
                                 <td>@item.ProductDescription</td>
                                 <td>@item.ProductPrice</td>
                                 <td>@item.ProductBarCode</td>
-                                <td>@item.ProductTax</td>
+                                <td>@item.ProductTax</td> 
                                 <td>@item.ProductCategory?.ProductCategoryName</td>
                                 <td>
                                     @if (await _usersService.CurrentUserIsAuthorizedAsync("UpdateProduct", "Product"))
                                     {
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm"><i class="bi bi-pencil-fill"></i></a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Editar"><i class="bi bi-pencil-fill"></i></a>
                                     }
                                     @if (await _usersService.CurrentUserIsAuthorizedAsync("DeleteProduct", "Product"))
                                     {
-                                        <form asp-action="Delete" asp-route-id="@item.Id" style="display: inline;">
-                                            <button class="btn btn-danger btn-sm btnDelete"><i class="bi bi-trash-fill"></i></button>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" style="display: inline;" method="post">
+                                            <button class="btn btn-danger btn-sm btnDelete" title="Eliminar"><i class="bi bi-trash-fill"></i></button>
                                         </form>
                                     }
-                                    @if (await _usersService.CurrentUserIsAuthorizedAsync("CreateReservation", "Reservations"))
+
+                                    @if (await _usersService.CurrentUserIsAuthorizedAsync("CreateReservationFromProduct", "Reservation"))
                                     {
-                                        <a asp-controller="Reservations"
-                                           asp-action="CreateFromProduct"
-                                           asp-route-productId="@item.Id"
-                                           class="btn btn-success btn-sm">
+                                        <a asp-controller="Reservations" asp-action="CreateFromProduct" asp-route-productId="@item.Id"
+                                           class="btn btn-success btn-sm" title="Reservar ahora">
                                             <i class="bi bi-calendar-check"></i> Reservar
                                         </a>
                                     }
-
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
-
                 @await Html.PartialAsync("_PaginationComponent", Model)
             </div>
         </div>
@@ -126,4 +128,4 @@
             });
         });
     </script>
-    }
+}

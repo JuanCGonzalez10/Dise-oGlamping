@@ -131,27 +131,27 @@ namespace OmniPyme.Web.Data.Seeders
                 string token = await _usersService.GenerateEmailConfirmationTokenAsync(users);
                 await _usersService.ConfirmEmailAsync(users, token);
             }
-            // CLIENTE
+            // CLIENTE (Turista)
             users = await _usersService.GetUserAsync("cliente@gmail.com");
 
             if (users is null)
             {
-                PrivateURole clienteRole = await _context.PrivateURoles
-                    .FirstOrDefaultAsync(r => r.Name == "Cliente");
+                PrivateURole turistaRole = await _context.PrivateURoles
+                    .FirstOrDefaultAsync(r => r.Name == "Turista"); // Usar "Turista"
 
                 users = new Users
                 {
-                    Email = "clienteTurista@gmail.com",
-                    FirstName = "Cliente",
+                    Email = "Turista@gmail.com",
+                    FirstName = "Turista",
                     LastName = "Turista",
-                    UserName = "clienteTurista@gmail.com",
+                    UserName = "Turista@gmail.com",
                     PhoneNumber = "000111222",
-                    Document = "10101010",
-                    PrivateURole = clienteRole,
+                    Document = "101010110",
+                    PrivateURole = turistaRole,
                     Photo = "https://localhost:7045/users/10771687.png"
                 };
 
-                await _usersService.AddUserAsync(users, "12345");
+                await _usersService.AddUserAsync(users, "1234"); // Contraseña segura
                 string token = await _usersService.GenerateEmailConfirmationTokenAsync(users);
                 await _usersService.ConfirmEmailAsync(users, token);
             }
@@ -163,7 +163,7 @@ namespace OmniPyme.Web.Data.Seeders
             await ManagerRoleAsync();
             await VendorRoleAsync();
             await InventoryManagerRoleAsync();
-            await SeedClientRoleAsync();
+            await TuristaRoleAsync();
         }
 
         private async Task ManagerRoleAsync()
@@ -250,55 +250,43 @@ namespace OmniPyme.Web.Data.Seeders
             }
         }
 
-        private async Task SeedClientRoleAsync()
+        // --- MÉTODO REFACTORIZADO Y CORREGIDO PARA TURISTA ---
+        private async Task TuristaRoleAsync()
         {
-            // Revisar si el rol ya existe
-            var clienteRole = await _context.PrivateURoles
-                .Include(r => r.RolePermissions)
-                .ThenInclude(rp => rp.Permission)
-                .FirstOrDefaultAsync(r => r.Name == "Cliente");
+            const string roleName = "Turista";
 
-            if (clienteRole == null)
+            bool exists = await _context.PrivateURoles.AnyAsync(r => r.Name == roleName);
+
+            if (!exists)
             {
-                clienteRole = new PrivateURole { Name = "Cliente" };
-                await _context.PrivateURoles.AddAsync(clienteRole);
+                PrivateURole role = new PrivateURole { Name = roleName };
+                await _context.PrivateURoles.AddAsync(role);
+
+                
+                // - Ver Glampings ("ShowProduct")
+                // - Crear Reserva desde Producto ("CreateReservationFromProduct")
+                // - Ver Mis Reservas ("ShowMyReservations")
+                // - Eliminar Reserva ("DeleteReservation")
+
+                List<Permission> permissions = await _context.Permissions
+                    .Where(p =>
+                        (p.Module == "Product" && p.Name == "ShowProduct") ||
+                        (p.Module == "Reservation" &&
+                         (p.Name == "CreateReservationFromProduct" ||
+                          p.Name == "ShowMyReservations" ||
+                          p.Name == "DeleteReservation") // Incluido el permiso de eliminar
+                        )
+                    )
+                    .ToListAsync();
+
+                // 2. Asignar los permisos al rol
+                foreach (Permission permission in permissions)
+                {
+                    await _context.RolePermissions.AddAsync(new RolePermission { Permission = permission, Role = role });
+                }
+
                 await _context.SaveChangesAsync();
             }
-
-            // Lista de permisos que el cliente debe tener
-            string[,] permisos = new string[,]
-            {
-                { "ShowProduct", "Product" },
-                { "ShowMyReservations", "Reservation" },
-                { "CreateReservationFromProduct", "Reservation" }
-            };
-
-            for (int i = 0; i < permisos.GetLength(0); i++)
-            {
-                string nombrePermiso = permisos[i, 0];
-                string modulo = permisos[i, 1];
-
-                var permiso = await _context.Permissions
-                    .FirstOrDefaultAsync(p => p.Name == nombrePermiso && p.Module == modulo);
-
-                if (permiso != null)
-                {
-                    bool tienePermiso = await _context.RolePermissions
-                        .AnyAsync(rp => rp.Roleid == clienteRole.Id && rp.permissionId == permiso.Id);
-
-                    if (!tienePermiso)
-                    {
-                        var rolePerm = new RolePermission
-                        {
-                            Roleid = clienteRole.Id,
-                            permissionId = permiso.Id
-                        };
-                        await _context.RolePermissions.AddAsync(rolePerm);
-                    }
-                }
-            }
-
-            await _context.SaveChangesAsync();
         }
 
 

@@ -64,12 +64,26 @@
                         <label asp-for="Nights"></label>
                     </div>
                 </div>
-
+                <!-- PRECIO POR NOCHE -->
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="PricePerNight" class="form-control" id="pricePerNight" readonly />
+                        <label asp-for="PricePerNight"></label>
+                    </div>
+                </div>
                 <!-- TOTAL (READONLY) -->
                 <div class="col-md-6">
                     <div class="form-floating">
                         <input asp-for="Total" class="form-control" id="totalPrice" readonly />
                         <label asp-for="Total"></label>
+                    </div>
+                </div>
+                <!-- METODO-->
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <select asp-for="PaymentMethod" asp-items="Model.PaymentMethods" class="form-select"></select>
+                        <label asp-for="PaymentMethod">Método de Pago</label>
+                        <span asp-validation-for="PaymentMethod" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -80,6 +94,7 @@
                         * El total y las noches se calculan automáticamente según la fecha.
                     </div>
                 </div>
+                <input type="hidden" asp-for="Status" />
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Guardar</button>
@@ -97,38 +112,69 @@
     }
 
     <script>
-        const priceList = @Html.Raw(Json.Serialize(Model.Products));
+        function calculateNights(date1Str, date2Str) {
+            if (!date1Str || !date2Str) return 0;
+
+            const date1 = new Date(date1Str);
+            const date2 = new Date(date2Str);
+
+            if (date2 <= date1) return 0;
+
+            const utcDate1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
+            const utcDate2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
+
+            const diffMs = utcDate2 - utcDate1;
+            const oneDayMs = 1000 * 60 * 60 * 24;
+
+            // Math.round es crucial para manejar el final del día y evitar números flotantes.
+            return Math.round(diffMs / oneDayMs);
+        }
+
+        const priceMap = @Html.Raw(Json.Serialize(Model.ProductPricesMap ?? new Dictionary<int, decimal>()));
 
         function calculate() {
-            const checkIn = document.getElementById("checkIn").value;
-            const checkOut = document.getElementById("checkOut").value;
+            const checkInValue = document.getElementById("checkIn").value;
+            const checkOutValue = document.getElementById("checkOut").value;
+            const productId = Number(document.getElementById("ProductId").value);
+
+            // Obtener elementos de salida
             const nightsInput = document.getElementById("nights");
-            const totalInput = document.getElementById("totalPrice");
-            const productId = document.getElementById("ProductId").value;
+            const totalPriceInput = document.getElementById("totalPrice");
+            const pricePerNightInput = document.getElementById("pricePerNight");
 
-            if (checkIn && checkOut) {
-                const date1 = new Date(checkIn);
-                const date2 = new Date(checkOut);
+            let pricePerNight = 0;
+            let nights = 0;
 
-                const diff = (date2 - date1) / (1000 * 60 * 60 * 24);
+            const priceKey = productId.toString();
+            // 1. Obtener el precio por noche del producto seleccionado
+            if (productId > 0 && priceMap[priceKey]) {
+                // El priceMap tiene claves numéricas (int) o convertibles a ellas
+                pricePerNight = parseFloat(priceMap[priceKey]);
+                pricePerNightInput.value = pricePerNight.toFixed(2);
+            } else {
+                pricePerNightInput.value = "";
+            }
 
-                if (diff > 0) {
-                    nightsInput.value = diff;
+            nightsInput.value = 0;
+            totalPriceInput.value = "";
 
-                    const pricePerNight = priceList[productId];
-                    if (pricePerNight) {
-                        totalInput.value = (diff * pricePerNight).toFixed(2);
-                    }
-                } else {
-                    nightsInput.value = "";
-                    totalInput.value = "";
-                }
+            // 2. Calcular las noches
+                if (checkInValue && checkOutValue) {
+                nights = calculateNights(checkInValue, checkOutValue);
+                nightsInput.value = nights;
+            }
+
+            // 3. Calcular el total
+            if (nights > 0 && pricePerNight > 0) {
+                const total = nights * pricePerNight;
+                totalPriceInput.value = total.toFixed(2); // Muestra el total con 2 decimales
             }
         }
 
         document.getElementById("checkIn").addEventListener("change", calculate);
         document.getElementById("checkOut").addEventListener("change", calculate);
         document.getElementById("ProductId").addEventListener("change", calculate);
+        calculate();
     </script>
 }
 

@@ -67,14 +67,43 @@ namespace OmniPyme.Web.Services
             dto.CheckIn = checkInUtc;
             dto.CheckOut = checkOutUtc;
 
-            // Guardar instrucciones de pago (regla #5)
-            dto.PaymentInstructions =
-                $"Consignar {dto.Total:C} al banco XXX. Referencia: {Guid.NewGuid()}";
+            // // ELIMINAR O COMENTAR ESTA SECCIÓN:
+            // dto.PaymentInstructions =
+            //     $"Consignar {dto.Total:C} al banco XXX. Referencia: {Guid.NewGuid()}";
 
             dto.CreatedAt = DateTime.UtcNow;
-            dto.Status = "PendientePago";
+            dto.Status = dto.Status ?? "PendientePago";
 
-            return await CreateAsync<Reservation, ReservationDTO>(dto);
+            try
+            {
+                // 1. Mapear DTO a Entity. AutoMapper ignorará las colecciones (SelectListItem)
+                Reservation entity = _mapper.Map<Reservation>(dto);
+
+                // 2. CRÍTICO: Asegurarse de que las propiedades de navegación (Product y User) 
+                // sean NULAS para que Entity Framework solo use las Foreign Keys (ProductId, UserId).
+                // Esto previene un error si AutoMapper intentó adjuntar un objeto Product/User incompleto.
+                entity.Product = null;
+                entity.User = null;
+
+                // 3. Agregar y guardar la entidad
+                _context.Reservations.Add(entity);
+                await _context.SaveChangesAsync();
+
+                // 4. Mapear de vuelta si necesita el ID generado u otros campos
+                ReservationDTO resultDto = _mapper.Map<ReservationDTO>(entity);
+
+                return ResponseHelper<ReservationDTO>.MakeResponseSuccess(resultDto, "Reserva creada correctamente.");
+            }
+            catch (Exception ex)
+            {
+                // Esto capturará la excepción real de la DB si ocurre.
+                // El mensaje de error será más útil internamente, pero al usuario se le mostrará el mensaje genérico de error.
+
+                // Si necesitas ver el error exacto para debuggear, descomenta esta línea:
+                // System.Diagnostics.Debug.WriteLine($"DB SAVE ERROR: {ex.Message} - Inner: {ex.InnerException?.Message}");
+
+                return ResponseHelper<ReservationDTO>.MakeResponseFail("Ha ocurrido un error al guardar la reserva. (DB Error)");
+            }
         }
 
         // ============================================================
@@ -195,9 +224,29 @@ namespace OmniPyme.Web.Services
                     CheckOut = r.CheckOut,
                 }).ToListAsync();
         }
+        // ============================================================
+        // PRECIOS CRÍTICOS
+        // ============================================================
 
-        
-        
+        public async Task<Dictionary<int, decimal>> GetProductPricesMapAsync()
+        {
+            // Obtiene un diccionario con ProductId como clave y ProductPrice como valor
+            return await _context.Products
+                .ToDictionaryAsync(p => p.Id, p => p.ProductPrice);
+        }
+
+        public async Task<decimal?> GetProductPriceAsync(int productId)
+        {
+            // Obtiene el precio de un solo producto.
+            decimal? price = await _context.Products
+                .Where(p => p.Id == productId)
+                .Select(p => (decimal?)p.ProductPrice)
+                .FirstOrDefaultAsync();
+
+            return price;
+        }
+
+
 
     }
 }

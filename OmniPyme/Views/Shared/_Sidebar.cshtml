@@ -93,10 +93,10 @@
 		}
 
 		<!-- CLIENTE: Mis reservas -->
-		@if (User.IsInRole("Client"))
+		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowMyReservations", "Reservation"))
 		{
-			<li class="nav-item">
-				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reservations" ? "" : "collapsed")"
+			<li class="nav-item" id="nav-misreservas">
+				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reservations" && ViewContext.RouteData.Values["Action"].ToString() == "MyReservations" ? "" : "collapsed")"
 				   asp-controller="Reservations" asp-action="Index">
 					<i class="bi bi-calendar-check"></i>
 					<span>Mis Reservas</span>
