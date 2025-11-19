@@ -1,119 +1,149 @@
 ﻿@inject OmniPyme.Web.Services.IUsersService _usersService
 
+@{
+	// Si NO tiene permiso ShowReservation, significa que es Turista
+	bool isTurista = !await _usersService.CurrentUserIsAuthorizedAsync("ShowReservation", "Reservation");
+}
 
 <!-- ======= Sidebar ======= -->
 <aside id="sidebar" class="sidebar">
 
 	<ul class="sidebar-nav" id="sidebar-nav">
 
+		<!-- INICIO -->
 		<li class="nav-item">
-			<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "" : "collapsed") active" asp-controller="Home" asp-action="Index">
+			<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "" : "collapsed")"
+			   asp-controller="Home" asp-action="Index">
 				<i class="bi bi-grid"></i>
 				<span>Inicio</span>
 			</a>
-		</li><!-- End Dashboard Nav -->
+		</li>
 
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowClient", "Client"))
+		@* ====================== SOLO TURISTA ====================== *@
+		@if (isTurista)
 		{
-
-
+			<!-- Glampings -->
 			<li class="nav-item">
-				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Clients" ? "" : "collapsed") active" asp-controller="Clients" asp-action="Index">
-					<i class="bi bi-person"></i>
-					<span>Clientes</span>
-				</a>
-			</li>
-
-		}
-
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("showRoles", "Roles"))
-		{
-
-			<li class="nav-item">
-				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Roles" ? "" : "collapsed") active" asp-controller="Roles"  asp-action="Index">
-					<i class="bi bi-shield-lock"></i>
-					<span>Roles</span>
-				</a>
-			</li>
-		}
-
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowSale", "Sale"))
-		{
-
-
-			<li class="nav-item">
-				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Invoices" ? "" : "collapsed") active" asp-controller="Invoices" asp-action="Index">
-					<i class="bi bi-file-earmark-spreadsheet"></i>
-					<span>Facturas</span>
-				</a>
-			</li>
-
-		}
-
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowProductCategory", "ProductCategory"))
-		{
-			<li class="nav-item">
-				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString()  == "ProductCategories" ? "" : "collapsed") active" asp-controller="ProductCategories" asp-action="Index">
-					<i class="bi bi-tags"></i>
-					<span>Categoria de producto</span>
-				</a>
-			</li>
-		}
-
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowProduct", "Product"))
-		{
-
-			<li class="nav-item">
-				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Glampings" ? "" : "collapsed") active" asp-controller="Products" asp-action="Index">
+				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Products" ? "" : "collapsed")"
+				   asp-controller="Products" asp-action="Index">
 					<i class="bi bi-box"></i>
 					<span>Glampings</span>
 				</a>
 			</li>
-		}
-
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowUsers", "Users"))
-		{
 
 			<li class="nav-item">
-				<a class="nav-link @(ViewData["ActivePage"] as string == "Users" ? "" : "collapsed") active" asp-controller="Users" asp-action="Index">
-					<i class="bi bi-person"></i>
-					<span>Usuarios</span>
-				</a>
-			</li>
-		}
-
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowLogs", "Logs"))
-		{
-			<li class="nav-item">
-				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "AplicationLogs" ? "" : "collapsed") active" asp-controller="AplicationLogs" asp-action="Index">
-					<i class="bi bi-code-slash"></i>
-					<span>Logs</span>
-				</a>
-			</li>
-		}
-
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowReservation", "Reservation"))
-
-		{
-
-			<li class="nav-item" id="nav-misreservas">
-
-				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reservations" && ViewContext.RouteData.Values["Action"].ToString() == "MyReservations" ? "" : "collapsed")"
+				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reservations" ? "" : "collapsed")"
 				   asp-controller="Reservations" asp-action="Index">
-
-					<i class="bi bi-calendar-check"></i>
-
+					<i class="bi bi-journal-bookmark-fill"></i>
 					<span>Mis Reservas</span>
-
 				</a>
-
 			</li>
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowProductCategory", "ProductCategory"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "ProductCategories" ? "" : "collapsed")"
+					   asp-controller="ProductCategories" asp-action="Index">
+						<i class="bi bi-tags"></i>
+						<span>Categoria de Glamping</span>
+					</a>
+				</li>
+			}
+
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowSale", "Sale"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Invoices" ? "" : "collapsed")"
+					   asp-controller="Invoices" asp-action="Index">
+						<i class="bi bi-file-earmark-spreadsheet"></i>
+						<span>Facturas</span>
+					</a>
+				</li>
+			}
+
 
 		}
 
-		<!-- ADMIN: Gestión de reservas -->
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowReservation", "Reservation"))
+		@* ====================== TODOS LOS DEMÁS ROLES ====================== *@
+		@if (!isTurista)
 		{
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowClient", "Client"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Clients" ? "" : "collapsed")"
+					   asp-controller="Clients" asp-action="Index">
+						<i class="bi bi-person"></i>
+						<span>Clientes</span>
+					</a>
+				</li>
+			}
+
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("showRoles", "Roles"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Roles" ? "" : "collapsed")"
+					   asp-controller="Roles" asp-action="Index">
+						<i class="bi bi-shield-lock"></i>
+						<span>Roles</span>
+					</a>
+				</li>
+			}
+
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowSale", "Sale"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Invoices" ? "" : "collapsed")"
+					   asp-controller="Invoices" asp-action="Index">
+						<i class="bi bi-file-earmark-spreadsheet"></i>
+						<span>Facturas</span>
+					</a>
+				</li>
+			}
+
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowProductCategory", "ProductCategory"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "ProductCategories" ? "" : "collapsed")"
+					   asp-controller="ProductCategories" asp-action="Index">
+						<i class="bi bi-tags"></i>
+						<span>Categoria de Glamping</span>
+					</a>
+				</li>
+			}
+
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowProduct", "Product"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Products" ? "" : "collapsed")"
+					   asp-controller="Products" asp-action="Index">
+						<i class="bi bi-box"></i>
+						<span>Glampings</span>
+					</a>
+				</li>
+			}
+
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowUsers", "Users"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewData["ActivePage"] as string == "Users" ? "" : "collapsed")"
+					   asp-controller="Users" asp-action="Index">
+						<i class="bi bi-person"></i>
+						<span>Usuarios</span>
+					</a>
+				</li>
+			}
+
+			@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowLogs", "Logs"))
+			{
+				<li class="nav-item">
+					<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "AplicationLogs" ? "" : "collapsed")"
+					   asp-controller="AplicationLogs" asp-action="Index">
+						<i class="bi bi-code-slash"></i>
+						<span>Logs</span>
+					</a>
+				</li>
+			}
+
+			<!-- Reservas -->
 			<li class="nav-item">
 				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reservations" ? "" : "collapsed")"
 				   asp-controller="Reservations" asp-action="Index">
@@ -123,7 +153,6 @@
 			</li>
 		}
 
-
 	</ul>
 
-</aside><!-- End Sidebar-->
+</aside>
