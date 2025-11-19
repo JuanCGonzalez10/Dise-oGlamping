@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AspNetCoreHero.ToastNotification;
+using AspNetCoreHero.ToastNotification.Extensions;
+using AspNetCoreHero.ToastNotification.Notyf.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OmniPyme.Data;
 using OmniPyme.Web;
@@ -36,6 +39,15 @@ builder.Services.AddTransient<UserRolesSeeder>(); // Correcto
 // Métodos personalizados
 builder.AddCustomConfiguration();
 
+builder.Services.AddNotyf(config =>
+{
+    config.DurationInSeconds = 10;
+    config.IsDismissable = true;
+    config.Position = NotyfPosition.TopRight;
+    config.Position = NotyfPosition.TopRight;
+});
+builder.Services.AddScoped<IUsersService, UsersService>();
+
 // --------------------------------------------------------
 // 2. BUILD APP
 // --------------------------------------------------------
@@ -59,6 +71,12 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
+
+app.UseRouting();
+app.UseAuthorization();
+
+// 📢 Habilitar Middleware de Notyf
+app.UseNotyf();
 
 // Manejo de errores con páginas personalizadas
 app.UseStatusCodePagesWithReExecute("/Errors/{0}");

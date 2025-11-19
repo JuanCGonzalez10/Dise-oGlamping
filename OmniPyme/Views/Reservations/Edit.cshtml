@@ -19,16 +19,100 @@
         <div class="card-body">
             <h5 class="card-title text-primary">Editar Reserva</h5>
 
-            <form asp-action="Edit" method="POST" class="row g-3">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div class="text-danger">@error.ErrorMessage</div>
+            }
+            <form asp-action="Edit" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
                 <input type="hidden" asp-for="Id" />
 
-                @* Si decidís usar un partial para compartilo con Create *@
-                <partial name="_ReservationForm" for="@Model" />
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <select asp-for="ProductId" asp-items="Model.Products" class="form-select"></select>
+                        <label asp-for="ProductId"></label>
+                        <span asp-validation-for="ProductId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input class="form-control" value="@(Model.User != null ? $"{Model.User.FirstName} {Model.User.LastName}" : "")" readonly />
+                        <label>Turista</label>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="CheckIn" class="form-control" type="date" id="checkIn" />
+                        <label asp-for="CheckIn"></label>
+                        <span asp-validation-for="CheckIn" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="CheckOut" class="form-control" type="date" id="checkOut" />
+                        <label asp-for="CheckOut"></label>
+                        <span asp-validation-for="CheckOut" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="Nights" class="form-control" id="nights" readonly />
+                        <label asp-for="Nights"></label>
+                        <span asp-validation-for="Nights" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="PricePerNight" class="form-control" id="pricePerNight" readonly />
+                        <label asp-for="PricePerNight"></label>
+                        <span asp-validation-for="PricePerNight" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="Total" class="form-control" id="totalPrice" readonly />
+                        <label asp-for="Total"></label>
+                        <span asp-validation-for="Total" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <select asp-for="PaymentMethod" asp-items="Model.PaymentMethods" class="form-select"></select>
+                        <label asp-for="PaymentMethod">Método de Pago</label>
+                        <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        * El precio por noche se llena automáticamente al seleccionar el producto.<br />
+                        * El total y las noches se calculan automáticamente según la fecha.
+                    </div>
+                </div>
+
+                <!-- Hidden fields necesarios -->
+                <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="CreatedAt" />
+                <input type="hidden" asp-for="Status" />
+                <input type="hidden" asp-for="PricePerNight" />
+                <input type="hidden" asp-for="Total" />
+                <input type="hidden" asp-for="Nights" />
+
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Guardar</button>
                     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
                 </div>
+
             </form>
         </div>
     </div>
@@ -38,5 +122,68 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        function calculateNights(date1Str, date2Str) {
+            if (!date1Str || !date2Str) return 0;
+
+            const date1 = new Date(date1Str);
+            const date2 = new Date(date2Str);
+
+            if (date2 <= date1) return 0;
+
+            const utcDate1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
+            const utcDate2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
+
+            const diffMs = utcDate2 - utcDate1;
+            const oneDayMs = 1000 * 60 * 60 * 24;
+
+            return Math.round(diffMs / oneDayMs);
+        }
+
+        const priceMap = JSON.parse('@Html.Raw(Json.Serialize(Model.ProductPricesMap ?? new Dictionary<int, decimal>()))');
+
+        function calculate() {
+            const checkInValue = document.getElementById("checkIn").value;
+            const checkOutValue = document.getElementById("checkOut").value;
+            const productId = Number(document.getElementById("ProductId").value);
+
+            const nightsInput = document.getElementById("nights");
+            const totalPriceInput = document.getElementById("totalPrice");
+            const pricePerNightInput = document.getElementById("pricePerNight");
+
+            let pricePerNight = 0;
+            let nights = 0;
+
+            const priceKey = productId.toString();
+
+            if (productId > 0 && priceMap[priceKey]) {
+                pricePerNight = parseFloat(priceMap[priceKey]);
+                pricePerNightInput.value = pricePerNight.toFixed(2);
+            } else {
+                pricePerNightInput.value = "";
+            }
+
+            nightsInput.value = 0;
+            totalPriceInput.value = "";
+
+            if (checkInValue && checkOutValue) {
+                nights = calculateNights(checkInValue, checkOutValue);
+                nightsInput.value = nights;
+            }
+
+            if (nights > 0 && pricePerNight > 0) {
+                const total = nights * pricePerNight;
+                totalPriceInput.value = total.toFixed(2);
+            }
+        }
+
+        document.getElementById("checkIn").addEventListener("change", calculate);
+        document.getElementById("checkOut").addEventListener("change", calculate);
+        document.getElementById("ProductId").addEventListener("change", calculate);
+
+        calculate();
+    </script>
 }
+
 

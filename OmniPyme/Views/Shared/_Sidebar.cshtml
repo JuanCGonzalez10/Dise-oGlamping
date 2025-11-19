@@ -92,16 +92,23 @@
 			</li>
 		}
 
-		<!-- CLIENTE: Mis reservas -->
-		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowMyReservations", "Reservation"))
+		@if (await _usersService.CurrentUserIsAuthorizedAsync("ShowReservation", "Reservation"))
+
 		{
+
 			<li class="nav-item" id="nav-misreservas">
+
 				<a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reservations" && ViewContext.RouteData.Values["Action"].ToString() == "MyReservations" ? "" : "collapsed")"
 				   asp-controller="Reservations" asp-action="Index">
+
 					<i class="bi bi-calendar-check"></i>
+
 					<span>Mis Reservas</span>
+
 				</a>
+
 			</li>
+
 		}
 
 		<!-- ADMIN: Gestión de reservas -->

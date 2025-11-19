@@ -273,7 +273,7 @@ namespace OmniPyme.Web.Data.Seeders
                         (p.Module == "Product" && p.Name == "ShowProduct") ||
                         (p.Module == "Reservation" &&
                          (p.Name == "CreateReservationFromProduct" ||
-                          p.Name == "ShowMyReservations" ||
+                          p.Name == "ShowReservation" ||
                           p.Name == "DeleteReservation") // Incluido el permiso de eliminar
                         )
                     )

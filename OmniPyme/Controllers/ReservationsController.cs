@@ -51,7 +51,7 @@ namespace OmniPyme.Web.Controllers
         // Muestra solo las reservas del usuario logueado.
         // =====================================================
         [HttpGet]
-        [CustomAuthorize(permission: "ShowMyReservations", module: "Reservation")]
+        [CustomAuthorize(permission: "ShowReservation", module: "Reservation")]
         [Authorize]
         public async Task<IActionResult> MyReservations([FromQuery] PaginationRequest request)
         {
@@ -63,14 +63,9 @@ namespace OmniPyme.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // NOTA: Debes asegurarte de que tu IReservationsService o su implementación
-            // tenga un método que filtre las reservas por el 'UserId' proporcionado (user.Id).
-            // Si el método GetPaginationAsync ya se encarga de esto basado en el contexto, 
-            // no hay problema, sino, necesitarás adaptar la llamada al servicio.
-
+            
             Response<PaginationResponse<ReservationDTO>> response =
-                await _reservationsService.GetPaginationAsync( request); // Asumo GetPaginationForUserAsync existe
-
+                await _reservationsService.GetPaginationAsync( request); 
             return View(response.Result);
         }
 
@@ -162,6 +157,8 @@ namespace OmniPyme.Web.Controllers
             // Cargar combos
             dto.Products = await _combosHelper.GetComboProducts(dto.ProductId);
             dto.Users = await _combosHelper.GetComboUsers(dto.UserId);
+            dto.PaymentMethods = _combosHelper.GetComboPaymentMethods(dto.PaymentMethod);
+            dto.ProductPricesMap = await _reservationsService.GetProductPricesMapAsync();
 
             return View(dto);
         }
@@ -182,12 +179,13 @@ namespace OmniPyme.Web.Controllers
                 dto.Products = await _combosHelper.GetComboProducts(dto.ProductId);
                 dto.Users = await _combosHelper.GetComboUsers(dto.UserId);
                 dto.ProductPricesMap = await _reservationsService.GetProductPricesMapAsync();
+                dto.PaymentMethods = _combosHelper.GetComboPaymentMethods(dto.PaymentMethod);
 
                 return View(dto);
             }
 
             Response<ReservationDTO> response = await _reservationsService.EditAsync(dto);
-
+            Console.WriteLine($"EDITA? -> {response.IsSuccess} | MSG: {response.Message}");
             if (response.IsSuccess)
             {
                 _notyf.Success(response.Message);
@@ -196,8 +194,11 @@ namespace OmniPyme.Web.Controllers
 
             _notyf.Error(response.Message);
 
+            // Si el servicio falla, recargar los combos y volver a la vista de edición.
             dto.Products = await _combosHelper.GetComboProducts(dto.ProductId);
             dto.Users = await _combosHelper.GetComboUsers(dto.UserId);
+            dto.ProductPricesMap = await _reservationsService.GetProductPricesMapAsync();
+            dto.PaymentMethods = _combosHelper.GetComboPaymentMethods(dto.PaymentMethod);
 
             return View(dto);
         }

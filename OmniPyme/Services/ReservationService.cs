@@ -111,29 +111,76 @@ namespace OmniPyme.Web.Services
         // ============================================================
         public async Task<Response<ReservationDTO>> EditAsync(ReservationDTO dto)
         {
-            bool exists = await _context.Reservations.AnyAsync(x => x.Id == dto.Id);
-            if (!exists)
-                return ResponseHelper<ReservationDTO>.MakeResponseFail($"No existe la reserva con id {dto.Id}");
+            try // <--- Bloque try/catch que envuelve TODA la lógica
+            {
+                // 1. Verificar existencia
+                Reservation? entity = await _context.Reservations.FindAsync(dto.Id);
+                if (entity == null)
+                    return ResponseHelper<ReservationDTO>.MakeResponseFail($"No existe la reserva con id {dto.Id}");
 
-            // Obtener el producto
-            Product? product = await _context.Products.FirstAsync(x => x.Id == dto.ProductId);
+                // 2. Obtener el producto (para el precio)
+                Product? product = await _context.Products.FirstOrDefaultAsync(x => x.Id == dto.ProductId);
+                if (product == null)
+                    return ResponseHelper<ReservationDTO>.MakeResponseFail("El glamping seleccionado no existe o fue eliminado.");
 
-            // Convertir fechas a UTC
-            DateTime checkInUtc = dto.CheckIn.ToUniversalTime();
-            DateTime checkOutUtc = dto.CheckOut.ToUniversalTime();
+                // 3. Convertir y validar fechas
+                DateTime checkInUtc = dto.CheckIn.ToUniversalTime();
+                DateTime checkOutUtc = dto.CheckOut.ToUniversalTime();
 
-            if (checkOutUtc <= checkInUtc)
-                return ResponseHelper<ReservationDTO>.MakeResponseFail("La fecha de salida debe ser mayor a la de entrada.");
+                if (checkOutUtc <= checkInUtc)
+                    return ResponseHelper<ReservationDTO>.MakeResponseFail("La fecha de salida debe ser mayor a la de entrada.");
 
-            dto.CheckIn = checkInUtc;
-            dto.CheckOut = checkOutUtc;
+                // 4. Recalcular y actualizar DTO antes del mapeo
+                dto.CheckIn = checkInUtc;
+                dto.CheckOut = checkOutUtc;
+                dto.Nights = (int)(checkOutUtc - checkInUtc).TotalDays;
+                dto.PricePerNight = product.ProductPrice;
+                dto.Total = dto.PricePerNight * dto.Nights;
 
-            // Recalcular noches y total
-            dto.Nights = (int)(checkOutUtc - checkInUtc).TotalDays;
-            dto.PricePerNight = product.ProductPrice;
-            dto.Total = dto.PricePerNight * dto.Nights;
+                // 5. Validación CRÍTICA de OVERBOOKING (traslape)
+                bool overlapping = await _context.Reservations.AnyAsync(r =>
+                    r.Id != dto.Id && // Excluir la propia reserva
+                    r.ProductId == dto.ProductId &&
+                    r.CheckIn < checkOutUtc &&
+                    checkInUtc < r.CheckOut);
 
-            return await EditAsync<Reservation, ReservationDTO>(dto, dto.Id);
+                if (overlapping)
+                    return ResponseHelper<ReservationDTO>.MakeResponseFail("Ya existe otra reserva en esas fechas para ese glamping.");
+
+                // 6. Mapear DTO a la ENTIDAD existente
+                // 🔥 SOLO ACTUALIZA LO QUE SE PUEDE EDITAR
+                entity.ProductId = dto.ProductId;
+                entity.CheckIn = dto.CheckIn;
+                entity.CheckOut = dto.CheckOut;
+                entity.Nights = dto.Nights;
+                entity.PricePerNight = dto.PricePerNight;
+                entity.Total = dto.Total;
+
+                // UserId, CreatedAt y Status NO SE TOCAN
+
+                // 7. Limpiar navegación properties para prevenir errores de Tracking/Attach
+                entity.Product = null;
+                entity.User = null;
+
+                // 8. Guardar cambios
+                _context.Reservations.Update(entity);
+                await _context.SaveChangesAsync();
+
+                // 9. Devolver éxito
+                ReservationDTO resultDto = _mapper.Map<ReservationDTO>(entity);
+                return ResponseHelper<ReservationDTO>.MakeResponseSuccess(resultDto, "Reserva actualizada correctamente.");
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Esto captura ERRORES DE RESTRICCIÓN DE LA BASE DE DATOS
+                string innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+                return ResponseHelper<ReservationDTO>.MakeResponseFail($"Error DB: {innerMessage}");
+            }
+            catch (Exception ex)
+            {
+                // Esto captura CUALQUIER OTRA EXCEPCIÓN (ej. NullReferenceException)
+                return ResponseHelper<ReservationDTO>.MakeResponseFail($"Error al generar la solicitud. Causa interna: {ex.Message}");
+            }
         }
 
         // ============================================================
